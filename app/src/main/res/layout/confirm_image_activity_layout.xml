@@ -7,22 +7,28 @@
     android:layout_height="match_parent"
     tools:context="tech.elc1798.projectpepe.activities.ConfirmImageActivity">
 
-    <ImageView
-        android:id="@+id/confirm_image_image_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="83dp"
-        app:srcCompat="@drawable/icon"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"/>
+    <FrameLayout
+        android:id="@+id/frame_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/confirm_image_image_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/background_dark"
+            app:srcCompat="@drawable/icon"/>
+    </FrameLayout>
 
     <Button
         android:id="@+id/confirm_image_button"
         style="@android:style/Widget.Material.Light.Button.Small"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="13dp"
-        android:text="@string/upload_image"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"/>
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="@null"
+        android:text="@string/upload_image"
+        android:textStyle="bold"/>
 </RelativeLayout>

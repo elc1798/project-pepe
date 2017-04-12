@@ -29,14 +29,12 @@ import tech.elc1798.projectpepe.imgprocessing.HaarCascade;
  */
 public class CameraActivity extends CameraStreamingActivity {
 
-    public static final String IMAGE_PARCELABLE_ID = "camera_act_2_confirm_image_act_IMAGE";
     public static final String IMG_CACHE_STORAGE_DIRECTORY = "snapshots";
     public static final String IMG_CACHE_FILENAME = "tmp.png";
 
     private static final String TAG = "PROJECT_PEPE::";
     private static final String FACE_CLASSIFIER_XML_FILE = "frontalfacecascade.xml";
     private static final String UNABLE_TO_SAVE_IMG = "Unable to save image!";
-    private static final String INTERNAL_ERROR_MSG = "Internal error occurred.";
     private static final double CLASSIFIER_SCALE_FACTOR = 1.1;
     private static final int MIN_SIZE_WIDTH = 250;
     private static final int MIN_SIZE_HEIGHT = 150;
@@ -156,8 +154,6 @@ public class CameraActivity extends CameraStreamingActivity {
                     cameraActivityContextRef.startActivity(confirmImageIntent);
                 } catch (IOException e) {
                     Toast.makeText(cameraActivityContextRef, UNABLE_TO_SAVE_IMG, Toast.LENGTH_SHORT).show();
-                } catch (Exception failsafeException) {
-                    Toast.makeText(cameraActivityContextRef, INTERNAL_ERROR_MSG, Toast.LENGTH_SHORT).show();
                 }
             }
         });

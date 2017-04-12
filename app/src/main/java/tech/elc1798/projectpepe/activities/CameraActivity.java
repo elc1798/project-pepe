@@ -12,6 +12,9 @@ import org.opencv.imgproc.Imgproc;
 import tech.elc1798.projectpepe.imgprocessing.CameraStreamingActivity;
 import tech.elc1798.projectpepe.imgprocessing.HaarCascade;
 
+/**
+ * Implementation of {@code CameraStreamingActivity}
+ */
 public class CameraActivity extends CameraStreamingActivity {
 
     private static final String TAG = "PROJECT_PEPE::";
@@ -43,6 +46,7 @@ public class CameraActivity extends CameraStreamingActivity {
 
     @Override
     public void onOpenCVLoad() {
+        // If the classifier is not yet instantiated, instantiate it.
         if (classifier == null) {
             classifier = new HaarCascade(this, FACE_CLASSIFIER_XML_FILE);
         }
@@ -55,10 +59,15 @@ public class CameraActivity extends CameraStreamingActivity {
 
     @Override
     public Mat processImage(Mat inputMat) {
+        // Create a grayscaled version of our image
         Mat grayscaleNormalized = inputMat.clone();
         Imgproc.cvtColor(inputMat, grayscaleNormalized, Imgproc.COLOR_RGB2GRAY);
+
+        // Use equalizeHist to normalize the lighting (brightness) of the image
         Imgproc.equalizeHist(grayscaleNormalized, grayscaleNormalized);
 
+        // If the classifier is usable, and we are on the zeroth iteration of our cycle, get the largest detection of
+        // our HaarCascade classifier
         if (!classifier.isEmpty() && frameCount == 0) {
             MatOfRect detections = classifier.detect(
                     grayscaleNormalized,
@@ -82,9 +91,11 @@ public class CameraActivity extends CameraStreamingActivity {
         Point diagonalEndpointLower = new Point(cached.x + cached.width, cached.y + cached.height);
         Point diagonalMidpoint = new Point(cached.x + cached.width / 2, cached.y + cached.height / 2);
 
+        // Draw a bounding rectange and center circle of detection
         Imgproc.rectangle(inputMat, diagonalEndpointUpper, diagonalEndpointLower, COLOR_GREEN, RECTANGLE_THICKNESS);
         Imgproc.circle(inputMat, diagonalMidpoint, CIRCLE_RADIUS, COLOR_RED, CIRCLE_THICKNESS);
 
+        // Increment cycle tick count
         frameCount = (frameCount + 1) % FRAME_PROCESS_RATE;
         return inputMat;
     }

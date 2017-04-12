@@ -11,7 +11,7 @@
         android:id="@+id/confirm_image_image_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
+        android:layout_marginTop="83dp"
         app:srcCompat="@drawable/icon"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"/>

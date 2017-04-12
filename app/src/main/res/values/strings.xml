@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">PROJECT: Pepe</string>
+    <string name="upload_image">Upload Image</string>
 </resources>

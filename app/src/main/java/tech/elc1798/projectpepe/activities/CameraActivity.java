@@ -1,6 +1,13 @@
 package tech.elc1798.projectpepe.activities;
 
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageButton;
+import android.widget.Toast;
+
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Point;
@@ -9,6 +16,11 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+import tech.elc1798.projectpepe.R;
 import tech.elc1798.projectpepe.imgprocessing.CameraStreamingActivity;
 import tech.elc1798.projectpepe.imgprocessing.HaarCascade;
 
@@ -17,8 +29,14 @@ import tech.elc1798.projectpepe.imgprocessing.HaarCascade;
  */
 public class CameraActivity extends CameraStreamingActivity {
 
+    public static final String IMAGE_PARCELABLE_ID = "camera_act_2_confirm_image_act_IMAGE";
+    public static final String IMG_CACHE_STORAGE_DIRECTORY = "snapshots";
+    public static final String IMG_CACHE_FILENAME = "tmp.png";
+
     private static final String TAG = "PROJECT_PEPE::";
     private static final String FACE_CLASSIFIER_XML_FILE = "frontalfacecascade.xml";
+    private static final String UNABLE_TO_SAVE_IMG = "Unable to save image!";
+    private static final String INTERNAL_ERROR_MSG = "Internal error occurred.";
     private static final double CLASSIFIER_SCALE_FACTOR = 1.1;
     private static final int MIN_SIZE_WIDTH = 250;
     private static final int MIN_SIZE_HEIGHT = 150;
@@ -27,9 +45,9 @@ public class CameraActivity extends CameraStreamingActivity {
     private static final int RECTANGLE_THICKNESS = 3;
     private static final int CIRCLE_RADIUS = 1;
     private static final int CIRCLE_THICKNESS = 5;
+    private static final int FRAME_PROCESS_RATE = 8;
     private static final Scalar COLOR_GREEN = new Scalar(0, 255, 0);
     private static final Scalar COLOR_RED = new Scalar(255, 0, 0);
-    public static final int FRAME_PROCESS_RATE = 8;
 
     private HaarCascade classifier;
     private Rect cached;
@@ -38,6 +56,8 @@ public class CameraActivity extends CameraStreamingActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        setPictureSnapOnClickListener();
 
         classifier = null;
         cached = new Rect(0, 0, 0, 0);
@@ -57,6 +77,12 @@ public class CameraActivity extends CameraStreamingActivity {
         return TAG;
     }
 
+    /**
+     * Implementation: Runs face detection on the input frame
+     *
+     * @param inputMat The matrix representation of the image (frame) captured by the camera
+     * @return The input picture with the largest detected face boxed.
+     */
     @Override
     public Mat processImage(Mat inputMat) {
         // Create a grayscaled version of our image
@@ -91,12 +117,49 @@ public class CameraActivity extends CameraStreamingActivity {
         Point diagonalEndpointLower = new Point(cached.x + cached.width, cached.y + cached.height);
         Point diagonalMidpoint = new Point(cached.x + cached.width / 2, cached.y + cached.height / 2);
 
-        // Draw a bounding rectange and center circle of detection
+        // Draw a bounding rectangle and center circle of detection
         Imgproc.rectangle(inputMat, diagonalEndpointUpper, diagonalEndpointLower, COLOR_GREEN, RECTANGLE_THICKNESS);
         Imgproc.circle(inputMat, diagonalMidpoint, CIRCLE_RADIUS, COLOR_RED, CIRCLE_THICKNESS);
 
         // Increment cycle tick count
         frameCount = (frameCount + 1) % FRAME_PROCESS_RATE;
         return inputMat;
+    }
+
+    /**
+     * Sets the OnClickListener for the ImageButton on the CameraView
+     */
+    private void setPictureSnapOnClickListener() {
+        // Inner class declaration requires all variables to be final
+        final CameraActivity cameraActivityContextRef = this;
+
+        // Get the ImageButton and set its OnClickListener
+        ImageButton imgButton = (ImageButton) this.findViewById(R.id.camera_button);
+        imgButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Bitmap bitmap = cameraActivityContextRef.getCurrentFrameBitmap();
+
+                try {
+                    // Bitmaps are too large to send through intent parcelables, so we store it in a storage directory
+                    File imgDirectory = cameraActivityContextRef.getDir(
+                            IMG_CACHE_STORAGE_DIRECTORY,
+                            Context.MODE_PRIVATE
+                    );
+
+                    FileOutputStream outputStream = new FileOutputStream(new File(imgDirectory, IMG_CACHE_FILENAME));
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+                    outputStream.close();
+
+                    // Spawn the intent
+                    Intent confirmImageIntent = new Intent(cameraActivityContextRef, ConfirmImageActivity.class);
+                    cameraActivityContextRef.startActivity(confirmImageIntent);
+                } catch (IOException e) {
+                    Toast.makeText(cameraActivityContextRef, UNABLE_TO_SAVE_IMG, Toast.LENGTH_SHORT).show();
+                } catch (Exception failsafeException) {
+                    Toast.makeText(cameraActivityContextRef, INTERNAL_ERROR_MSG, Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 }

@@ -1,6 +1,7 @@
 package tech.elc1798.projectpepe.imgprocessing;
 
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -118,6 +119,15 @@ public abstract class CameraStreamingActivity extends AppCompatActivity implemen
         setImage(processImage(inverted));
 
         return tmp;
+    }
+
+    /**
+     * Gets the bitmap stored in our image view.
+     *
+     * @return The current image as a bitmap
+     */
+    public Bitmap getCurrentFrameBitmap() {
+        return ((BitmapDrawable) imageView.getDrawable()).getBitmap();
     }
 
     /**

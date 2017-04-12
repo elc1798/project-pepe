@@ -4,10 +4,18 @@
 
     <uses-permission android:name="android.permission.CAMERA"/>
 
-    <uses-feature android:name="android.hardware.camera" android:required="true"/>
-    <uses-feature android:name="android.hardware.camera.autofocus" android:required="true"/>
-    <uses-feature android:name="android.hardware.camera.front" android:required="true"/>
-    <uses-feature android:name="android.hardware.camera.front.autofocus" android:required="true"/>
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true"/>
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="true"/>
+    <uses-feature
+        android:name="android.hardware.camera.front"
+        android:required="true"/>
+    <uses-feature
+        android:name="android.hardware.camera.front.autofocus"
+        android:required="true"/>
 
     <application
         android:allowBackup="true"
@@ -22,6 +30,8 @@
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+        </activity>
+        <activity android:name=".activities.ConfirmImageActivity">
         </activity>
     </application>
 

@@ -29,12 +29,13 @@ import tech.elc1798.projectpepe.imgprocessing.HaarCascade;
  */
 public class CameraActivity extends CameraStreamingActivity {
 
+    public static final String CAMERA_ACTIVITY_IMAGE_FILE_NAME_INTENT_EXTRA_ID = "camera_act_img_intent_extra_id";
     public static final String IMG_CACHE_STORAGE_DIRECTORY = "snapshots";
-    public static final String IMG_CACHE_FILENAME = "tmp.png";
 
     private static final String TAG = "PROJECT_PEPE::";
     private static final String FACE_CLASSIFIER_XML_FILE = "frontalfacecascade.xml";
     private static final String UNABLE_TO_SAVE_IMG = "Unable to save image!";
+    private static final String IMG_CACHE_FILENAME_FORMAT = "%s.png";
     private static final double CLASSIFIER_SCALE_FACTOR = 1.1;
     private static final int MIN_SIZE_WIDTH = 250;
     private static final int MIN_SIZE_HEIGHT = 150;
@@ -44,6 +45,7 @@ public class CameraActivity extends CameraStreamingActivity {
     private static final int CIRCLE_RADIUS = 1;
     private static final int CIRCLE_THICKNESS = 5;
     private static final int FRAME_PROCESS_RATE = 8;
+    private static final int COMPRESSION_RATE = 100;
     private static final Scalar COLOR_GREEN = new Scalar(0, 255, 0);
     private static final Scalar COLOR_RED = new Scalar(255, 0, 0);
 
@@ -145,12 +147,19 @@ public class CameraActivity extends CameraStreamingActivity {
                             Context.MODE_PRIVATE
                     );
 
-                    FileOutputStream outputStream = new FileOutputStream(new File(imgDirectory, IMG_CACHE_FILENAME));
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+                    String uniqueFileName = String.format(
+                            IMG_CACHE_FILENAME_FORMAT,
+                            Long.toString(System.currentTimeMillis())
+                    );
+
+                    File imgFile = new File(imgDirectory, uniqueFileName);
+                    FileOutputStream outputStream = new FileOutputStream(imgFile);
+                    bitmap.compress(Bitmap.CompressFormat.PNG, COMPRESSION_RATE, outputStream);
                     outputStream.close();
 
                     // Spawn the intent
                     Intent confirmImageIntent = new Intent(cameraActivityContextRef, ConfirmImageActivity.class);
+                    confirmImageIntent.putExtra(CAMERA_ACTIVITY_IMAGE_FILE_NAME_INTENT_EXTRA_ID, uniqueFileName);
                     cameraActivityContextRef.startActivity(confirmImageIntent);
                 } catch (IOException e) {
                     Toast.makeText(cameraActivityContextRef, UNABLE_TO_SAVE_IMG, Toast.LENGTH_SHORT).show();

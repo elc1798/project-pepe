@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -16,11 +17,14 @@ import java.io.FileInputStream;
 
 import tech.elc1798.projectpepe.Constants;
 import tech.elc1798.projectpepe.R;
+import tech.elc1798.projectpepe.net.NetworkOperationCallback;
 import tech.elc1798.projectpepe.net.NetworkRequestAsyncTask;
 
 public class ConfirmImageActivity extends AppCompatActivity {
 
     private static final String ERROR_SETTING_IMAGE = "Could not set image";
+    private static final String FILE_UPLOAD_SUCCESS_MESSAGE = "Image successfully uploaded!";
+    private static final String FILE_UPLOAD_FAIL_MESSAGE = "Server could not save uploaded image!";
 
     private File imageFile;
 
@@ -72,10 +76,22 @@ public class ConfirmImageActivity extends AppCompatActivity {
      */
     private void setOnClickListener() {
         Button uploadButton = (Button) this.findViewById(R.id.confirm_image_button);
+
+        final ConfirmImageActivity contextRef = this;
         uploadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new NetworkRequestAsyncTask(imageFile).execute(Constants.PROJECT_SERVER_UPLOAD_ENDPOINT_URL);
+                new NetworkRequestAsyncTask(new NetworkOperationCallback() {
+                    @Override
+                    public void parseNetworkOperationContents(String contents) {
+                        if (contents.equals(Constants.PROJECT_SERVER_FILE_UPLOAD_SUCCESS_RESP)) {
+                            Toast.makeText(contextRef, FILE_UPLOAD_SUCCESS_MESSAGE, Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(contextRef, FILE_UPLOAD_FAIL_MESSAGE, Toast.LENGTH_SHORT).show();
+                        }
+                        contextRef.finish();
+                    }
+                }, imageFile).execute(Constants.PROJECT_SERVER_UPLOAD_ENDPOINT_URL);
             }
         });
     }

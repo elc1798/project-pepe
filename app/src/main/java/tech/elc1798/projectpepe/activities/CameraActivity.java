@@ -32,7 +32,7 @@ public class CameraActivity extends CameraStreamingActivity {
     public static final String CAMERA_ACTIVITY_IMAGE_FILE_NAME_INTENT_EXTRA_ID = "camera_act_img_intent_extra_id";
     public static final String IMG_CACHE_STORAGE_DIRECTORY = "snapshots";
 
-    private static final String TAG = "PROJECT_PEPE::";
+    private static final String TAG = "PEPE_CAMERA:";
     private static final String FACE_CLASSIFIER_XML_FILE = "frontalfacecascade.xml";
     private static final String UNABLE_TO_SAVE_IMG = "Unable to save image!";
     private static final String IMG_CACHE_FILENAME_FORMAT = "%s.png";
@@ -138,24 +138,14 @@ public class CameraActivity extends CameraStreamingActivity {
         imgButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Stop the camera
+                stopCamera();
+
                 Bitmap bitmap = cameraActivityContextRef.getCurrentFrameBitmap();
 
                 try {
                     // Bitmaps are too large to send through intent parcelables, so we store it in a storage directory
-                    File imgDirectory = cameraActivityContextRef.getDir(
-                            IMG_CACHE_STORAGE_DIRECTORY,
-                            Context.MODE_PRIVATE
-                    );
-
-                    String uniqueFileName = String.format(
-                            IMG_CACHE_FILENAME_FORMAT,
-                            Long.toString(System.currentTimeMillis())
-                    );
-
-                    File imgFile = new File(imgDirectory, uniqueFileName);
-                    FileOutputStream outputStream = new FileOutputStream(imgFile);
-                    bitmap.compress(Bitmap.CompressFormat.PNG, COMPRESSION_RATE, outputStream);
-                    outputStream.close();
+                    String uniqueFileName = saveBitmapToUniqueFile(bitmap);
 
                     // Spawn the intent
                     Intent confirmImageIntent = new Intent(cameraActivityContextRef, ConfirmImageActivity.class);
@@ -166,5 +156,32 @@ public class CameraActivity extends CameraStreamingActivity {
                 }
             }
         });
+    }
+
+    /**
+     * Generates a unique file name and saves the provided bitmap to a file with that filename. Spawns a thread
+     * internally for IO operations
+     *
+     * @param bitmap The bitmap to save
+     * @return The generated file name
+     * @throws IOException Upon error during file read / write
+     */
+    private String saveBitmapToUniqueFile(Bitmap bitmap) throws IOException {
+        File imgDirectory = this.getDir(
+                IMG_CACHE_STORAGE_DIRECTORY,
+                Context.MODE_PRIVATE
+        );
+
+        String uniqueFileName = String.format(
+                IMG_CACHE_FILENAME_FORMAT,
+                Long.toString(System.currentTimeMillis())
+        );
+
+        File imgFile = new File(imgDirectory, uniqueFileName);
+        FileOutputStream outputStream = new FileOutputStream(imgFile);
+        bitmap.compress(Bitmap.CompressFormat.PNG, COMPRESSION_RATE, outputStream);
+        outputStream.close();
+
+        return uniqueFileName;
     }
 }

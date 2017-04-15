@@ -28,6 +28,7 @@ public abstract class CameraStreamingActivity extends AppCompatActivity implemen
 
     private static final int OPENCV_FLIP_VERTICAL = 1;
 
+    private FrameLayout frameLayout;
     private JavaCameraView cameraView;
     private ImageView imageView;
 
@@ -67,7 +68,7 @@ public abstract class CameraStreamingActivity extends AppCompatActivity implemen
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.camera_activity_layout);
 
-        FrameLayout frameLayout = (FrameLayout) findViewById(R.id.camera_view_frame_layout);
+        frameLayout = (FrameLayout) findViewById(R.id.camera_view_frame_layout);
 
         cameraView = new JavaCameraView(this, CameraBridgeViewBase.CAMERA_ID_FRONT);
         cameraView.setCvCameraViewListener(this);
@@ -128,6 +129,10 @@ public abstract class CameraStreamingActivity extends AppCompatActivity implemen
      */
     public Bitmap getCurrentFrameBitmap() {
         return ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+    }
+
+    public void stopCamera() {
+        this.cameraView.disableView();
     }
 
     /**

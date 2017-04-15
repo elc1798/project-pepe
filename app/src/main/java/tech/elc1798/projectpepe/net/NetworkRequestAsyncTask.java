@@ -4,22 +4,25 @@ import android.os.AsyncTask;
 
 import java.io.File;
 
-public class NetworkRequestAsyncTask extends AsyncTask<String, Void, String[]> {
+public class NetworkRequestAsyncTask extends AsyncTask<String, Void, String> {
 
     public enum RequestProtocols {
         GET, POST
     }
 
     private RequestProtocols protocol;
+    private NetworkOperationCallback callback;
     private File file;
 
-    public NetworkRequestAsyncTask() {
+    public NetworkRequestAsyncTask(NetworkOperationCallback callback) {
         this.protocol = RequestProtocols.GET;
+        this.callback = callback;
         this.file = null;
     }
 
-    public NetworkRequestAsyncTask(File file) {
+    public NetworkRequestAsyncTask(NetworkOperationCallback callback, File file) {
         this.protocol = RequestProtocols.POST;
+        this.callback = callback;
         this.file = file;
     }
 
@@ -38,17 +41,33 @@ public class NetworkRequestAsyncTask extends AsyncTask<String, Void, String[]> {
      * @see #publishProgress
      */
     @Override
-    protected String[] doInBackground(String... params) {
-        String[] responses = new String[params.length];
-        for (int i = 0; i < params.length; i++) {
-            String url = params[i];
-
-            if (this.protocol == RequestProtocols.GET) {
-                responses[i] = HTTPRequester.makeSafeGETRequest(url);
-            } else if (this.protocol == RequestProtocols.POST) {
-                responses[i] = HTTPRequester.makePOSTFileUploadRequest(url, file);
-            }
+    protected String doInBackground(String... params) {
+        String url = params[0];
+        if (this.protocol == RequestProtocols.GET) {
+            return HTTPRequester.makeSafeGETRequest(url);
+        } else if (this.protocol == RequestProtocols.POST) {
+            return HTTPRequester.makePOSTFileUploadRequest(url, file);
         }
-        return responses;
+        return null;
+    }
+
+    /**
+     * <p>Runs on the UI thread after {@link #doInBackground}. The
+     * specified result is the value returned by {@link #doInBackground}.</p>
+     * <p>
+     * <p>This method won't be invoked if the task was cancelled.</p>
+     *
+     * @param string The result of the operation computed by {@link #doInBackground}.
+     * @see #onPreExecute
+     * @see #doInBackground
+     * @see #onCancelled(Object)
+     */
+    @Override
+    protected void onPostExecute(String string) {
+        super.onPostExecute(string);
+
+        if (this.callback != null) {
+            this.callback.parseNetworkOperationContents(string);
+        }
     }
 }

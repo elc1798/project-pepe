@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.io.File;
@@ -22,9 +23,12 @@ import tech.elc1798.projectpepe.net.NetworkRequestAsyncTask;
 
 public class ConfirmImageActivity extends AppCompatActivity {
 
+    private static final String TAG = "PEPE_CONFIRM_IMG:";
     private static final String ERROR_SETTING_IMAGE = "Could not set image";
     private static final String FILE_UPLOAD_SUCCESS_MESSAGE = "Image successfully uploaded!";
     private static final String FILE_UPLOAD_FAIL_MESSAGE = "Server could not save uploaded image!";
+    private static final String THREAD_SLEEP_INTERRUPT_MESSAGE = "Thread sleep interrupted";
+    private static final int THREAD_SLEEP_TIME = 100;
 
     private File imageFile;
 
@@ -43,8 +47,26 @@ public class ConfirmImageActivity extends AppCompatActivity {
 
         imageFile = new File(imgDirectory, imageFilename);
 
-        setImage();
-        setOnClickListener();
+        final Thread setImageThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (CameraActivity.getFileWriteState() != CameraActivity.IOState.NOT_RUNNING) {
+                    try {
+                        Thread.sleep(THREAD_SLEEP_TIME);
+                    } catch (InterruptedException e) {
+                        Log.d(TAG, THREAD_SLEEP_INTERRUPT_MESSAGE);
+                    }
+                }
+
+                // Stop the rotating progress bar
+                stopProgressBar();
+
+                setImage();
+                setOnClickListener();
+            }
+        });
+
+        setImageThread.start();
     }
 
     /**
@@ -92,6 +114,17 @@ public class ConfirmImageActivity extends AppCompatActivity {
                         contextRef.finish();
                     }
                 }, imageFile).execute(Constants.PROJECT_SERVER_UPLOAD_ENDPOINT_URL);
+            }
+        });
+    }
+
+    private void stopProgressBar() {
+        final ProgressBar progressBar = (ProgressBar) this.findViewById(R.id.confirm_image_progress_bar);
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                progressBar.setVisibility(View.GONE);
             }
         });
     }

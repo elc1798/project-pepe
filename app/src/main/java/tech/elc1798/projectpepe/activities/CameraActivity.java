@@ -29,9 +29,14 @@ import tech.elc1798.projectpepe.imgprocessing.HaarCascade;
  */
 public class CameraActivity extends CameraStreamingActivity {
 
+    // Public constants
     public static final String CAMERA_ACTIVITY_IMAGE_FILE_NAME_INTENT_EXTRA_ID = "camera_act_img_intent_extra_id";
     public static final String IMG_CACHE_STORAGE_DIRECTORY = "snapshots";
+    public enum IOState {
+        NOT_RUNNING, RUNNING
+    }
 
+    // Private constants
     private static final String TAG = "PEPE_CAMERA:";
     private static final String FACE_CLASSIFIER_XML_FILE = "frontalfacecascade.xml";
     private static final String UNABLE_TO_SAVE_IMG = "Unable to save image!";
@@ -49,6 +54,15 @@ public class CameraActivity extends CameraStreamingActivity {
     private static final Scalar COLOR_GREEN = new Scalar(0, 255, 0);
     private static final Scalar COLOR_RED = new Scalar(255, 0, 0);
 
+    // Private statics
+    private static IOState fileWriteState;
+
+    // Public statics
+    public static IOState getFileWriteState() {
+        return fileWriteState;
+    }
+
+    // Private instance variables
     private HaarCascade classifier;
     private Rect cached;
     private int frameCount;
@@ -59,6 +73,7 @@ public class CameraActivity extends CameraStreamingActivity {
 
         setPictureSnapOnClickListener();
 
+        fileWriteState = IOState.NOT_RUNNING;
         classifier = null;
         cached = new Rect(0, 0, 0, 0);
         frameCount = 0;
@@ -143,17 +158,13 @@ public class CameraActivity extends CameraStreamingActivity {
 
                 Bitmap bitmap = cameraActivityContextRef.getCurrentFrameBitmap();
 
-                try {
-                    // Bitmaps are too large to send through intent parcelables, so we store it in a storage directory
-                    String uniqueFileName = saveBitmapToUniqueFile(bitmap);
+                // Bitmaps are too large to send through intent parcelables, so we store it in a storage directory
+                String uniqueFileName = saveBitmapToUniqueFile(bitmap);
 
-                    // Spawn the intent
-                    Intent confirmImageIntent = new Intent(cameraActivityContextRef, ConfirmImageActivity.class);
-                    confirmImageIntent.putExtra(CAMERA_ACTIVITY_IMAGE_FILE_NAME_INTENT_EXTRA_ID, uniqueFileName);
-                    cameraActivityContextRef.startActivity(confirmImageIntent);
-                } catch (IOException e) {
-                    Toast.makeText(cameraActivityContextRef, UNABLE_TO_SAVE_IMG, Toast.LENGTH_SHORT).show();
-                }
+                // Spawn the intent
+                Intent confirmImageIntent = new Intent(cameraActivityContextRef, ConfirmImageActivity.class);
+                confirmImageIntent.putExtra(CAMERA_ACTIVITY_IMAGE_FILE_NAME_INTENT_EXTRA_ID, uniqueFileName);
+                cameraActivityContextRef.startActivity(confirmImageIntent);
             }
         });
     }
@@ -166,7 +177,9 @@ public class CameraActivity extends CameraStreamingActivity {
      * @return The generated file name
      * @throws IOException Upon error during file read / write
      */
-    private String saveBitmapToUniqueFile(Bitmap bitmap) throws IOException {
+    private String saveBitmapToUniqueFile(final Bitmap bitmap) {
+        final CameraActivity cameraActivityContextRef = this;
+
         File imgDirectory = this.getDir(
                 IMG_CACHE_STORAGE_DIRECTORY,
                 Context.MODE_PRIVATE
@@ -177,10 +190,25 @@ public class CameraActivity extends CameraStreamingActivity {
                 Long.toString(System.currentTimeMillis())
         );
 
-        File imgFile = new File(imgDirectory, uniqueFileName);
-        FileOutputStream outputStream = new FileOutputStream(imgFile);
-        bitmap.compress(Bitmap.CompressFormat.PNG, COMPRESSION_RATE, outputStream);
-        outputStream.close();
+        final File imgFile = new File(imgDirectory, uniqueFileName);
+
+        Thread ioThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                CameraActivity.fileWriteState = IOState.RUNNING;
+
+                try {
+                    FileOutputStream outputStream = new FileOutputStream(imgFile);
+                    bitmap.compress(Bitmap.CompressFormat.PNG, COMPRESSION_RATE, outputStream);
+                    outputStream.close();
+                } catch (Exception e) {
+                    Toast.makeText(cameraActivityContextRef, UNABLE_TO_SAVE_IMG, Toast.LENGTH_SHORT).show();
+                } finally {
+                    CameraActivity.fileWriteState = IOState.NOT_RUNNING;
+                }
+            }
+        });
+        ioThread.start();
 
         return uniqueFileName;
     }

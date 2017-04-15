@@ -45,6 +45,7 @@
         android:layout_marginBottom="16dp"
         android:backgroundTint="@null"
         android:text="@string/upload_image"
-        android:textStyle="bold"/>
+        android:textStyle="bold"
+        android:visibility="invisible"/>
 
 </RelativeLayout>

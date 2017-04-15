@@ -62,7 +62,7 @@ public class ConfirmImageActivity extends AppCompatActivity {
                 stopProgressBar();
 
                 setImage();
-                setOnClickListener();
+                setUpUploadButton();
             }
         });
 
@@ -96,8 +96,14 @@ public class ConfirmImageActivity extends AppCompatActivity {
     /**
      * Sets the onClickListener of the button to upload the image to the Project PEPE server
      */
-    private void setOnClickListener() {
-        Button uploadButton = (Button) this.findViewById(R.id.confirm_image_button);
+    private void setUpUploadButton() {
+        final Button uploadButton = (Button) this.findViewById(R.id.confirm_image_button);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                uploadButton.setVisibility(View.VISIBLE);
+            }
+        });
 
         final ConfirmImageActivity contextRef = this;
         uploadButton.setOnClickListener(new View.OnClickListener() {

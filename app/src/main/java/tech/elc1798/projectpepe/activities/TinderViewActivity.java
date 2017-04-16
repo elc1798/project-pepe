@@ -14,7 +14,6 @@ import android.widget.ImageView;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import tech.elc1798.projectpepe.Constants;
 import tech.elc1798.projectpepe.R;
@@ -69,7 +68,6 @@ public class TinderViewActivity extends AppCompatActivity {
     @Override
     public boolean onTouchEvent(MotionEvent event){
         this.detector.onTouchEvent(event);
-        // Be sure to call the superclass implementation
         return super.onTouchEvent(event);
     }
 
@@ -153,14 +151,14 @@ public class TinderViewActivity extends AppCompatActivity {
 
     private class GetImageURLCallback extends NetworkOperationCallback {
 
-        private int currentPage;
+        private int currentOffset;
 
         GetImageURLCallback() {
-            currentPage = 0;
+            currentOffset = 0;
         }
 
         String getCurrentPageURL() {
-            String params = String.format(Constants.PROJECT_SERVER_GET_PARAMETERS, currentPage);
+            String params = String.format(Constants.PROJECT_SERVER_GET_PARAMETERS, currentOffset);
             return Constants.PROJECT_SERVER_URL + params;
         }
 
@@ -170,7 +168,6 @@ public class TinderViewActivity extends AppCompatActivity {
                 return;
             }
 
-            currentPage += Constants.PROJECT_SERVER_NUM_IMAGES_PER_QUERY;
             String[] imagePaths = contents.trim().split(Constants.PROJECT_SERVER_IMAGELIST_SEPARATOR);
 
             for (String imagePath : imagePaths) {
@@ -180,8 +177,7 @@ public class TinderViewActivity extends AppCompatActivity {
                 }
             }
 
-            Log.d(TAG, "LENGTH: " + imagePaths.length + " || " + Arrays.toString(imagePaths));
-
+            currentOffset = imageIDs.size();
             loadCurrentImages();
         }
     }

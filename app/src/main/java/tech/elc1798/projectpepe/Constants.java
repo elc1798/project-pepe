@@ -8,5 +8,6 @@ public class Constants {
     public static final String PROJECT_SERVER_IMAGELIST_SEPARATOR = ", ";
     public static final String PROJECT_SERVER_UPLOAD_ENDPOINT_URL = "https://project-pepe-imgs.herokuapp.com/upload/";
     public static final String PROJECT_SERVER_FILE_UPLOAD_SUCCESS_RESP = "OK";
+    public static final int PROJECT_SERVER_NUM_IMAGES_PER_QUERY = 10;
 
 }

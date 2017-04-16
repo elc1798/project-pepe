@@ -10,10 +10,12 @@ import android.view.View;
 import android.widget.ImageButton;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import tech.elc1798.projectpepe.Constants;
 import tech.elc1798.projectpepe.R;
 import tech.elc1798.projectpepe.activities.extras.MemeViewAdapter;
+import tech.elc1798.projectpepe.activities.extras.TinderViewOnScrollListener;
 import tech.elc1798.projectpepe.net.NetworkOperationCallback;
 import tech.elc1798.projectpepe.net.NetworkRequestAsyncTask;
 
@@ -39,12 +41,19 @@ public class TinderViewActivity extends AppCompatActivity {
         recyclerView = (RecyclerView) this.findViewById(R.id.tinder_view_recycler_view);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
+        recyclerView.removeOnScrollListener(null);
+        recyclerView.setNestedScrollingEnabled(false);
+        recyclerView.addOnScrollListener(new TinderViewOnScrollListener(this));
 
         callback = new GetImageURLCallback();
 
-        new NetworkRequestAsyncTask(callback).execute(callback.getCurrentURL());
+        getNextBatchOfImages();
 
         setUpCameraButton();
+    }
+
+    public void getNextBatchOfImages() {
+        new NetworkRequestAsyncTask(callback).execute(callback.getCurrentURL());
     }
 
     private void setUpCameraButton() {
@@ -79,14 +88,19 @@ public class TinderViewActivity extends AppCompatActivity {
                 return;
             }
 
-            currentPage++;
-            String[] imagePaths = contents.split(Constants.PROJECT_SERVER_IMAGELIST_SEPARATOR);
+            currentPage += Constants.PROJECT_SERVER_NUM_IMAGES_PER_QUERY;
+            String[] imagePaths = contents.trim().split(Constants.PROJECT_SERVER_IMAGELIST_SEPARATOR);
             for (String imagePath : imagePaths) {
-                Log.d(TAG, imagePath);
-                imageIDs.add(imagePath);
+                Log.d(TAG, "Image path: " + imagePath);
+                if (imagePath.length() > 0) {
+                    imageIDs.add(imagePath);
+                }
             }
 
-            adapter.notifyDataSetChanged();
+            Log.d(TAG, "LENGTH: " + imagePaths.length + " || " + Arrays.toString(imagePaths));
+            if (imagePaths.length > 1) {
+                adapter.notifyDataSetChanged();
+            }
         }
     }
 }

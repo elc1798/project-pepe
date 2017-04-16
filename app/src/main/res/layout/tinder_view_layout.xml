@@ -38,12 +38,21 @@
 
     </FrameLayout>
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/tinder_view_recycler_view"
+    <FrameLayout
+        android:id="@+id/tinder_view_img_display"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/frameLayout"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true">
-    </android.support.v7.widget.RecyclerView>
+
+        <ImageView
+            android:id="@+id/tinder_view_no_more_memes"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/background_dark"
+            android:scaleType="centerInside"
+            app:srcCompat="@mipmap/no_more_memes"/>
+    </FrameLayout>
+
 </RelativeLayout>

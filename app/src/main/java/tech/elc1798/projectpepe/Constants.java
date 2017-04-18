@@ -9,6 +9,7 @@ public class Constants {
     public static final String PROJECT_SERVER_FILE_UPLOAD_URL = "https://project-pepe-imgs.herokuapp.com/upload/";
     public static final String PROJECT_SERVER_FILE_UPLOAD_SUCCESS_RESP = "ok";
     public static final String PROJECT_SERVER_FILE_UPLOAD_TEST_URL = "https://project-pepe-imgs.herokuapp.com/ephemeralupload/";
+    public static final String PROJECT_SERVER_STATUS_URL = "https://project-pepe-imgs.herokuapp.com/status/";
     public static final String PROJECT_SERVER_TEST_URL = "https://project-pepe-imgs.herokuapp.com/test/";
 
 }

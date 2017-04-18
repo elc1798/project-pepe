@@ -119,7 +119,7 @@ public class ConfirmImageActivity extends AppCompatActivity {
                         }
                         contextRef.finish();
                     }
-                }, imageFile).execute(Constants.PROJECT_SERVER_UPLOAD_ENDPOINT_URL);
+                }, imageFile).execute(Constants.PROJECT_SERVER_FILE_UPLOAD_URL);
             }
         });
     }

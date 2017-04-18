@@ -121,16 +121,22 @@ public class HTTPRequester {
             dos.writeBytes(CRLF);
             dos.writeBytes(HTTP_FORM_DELIMITER + HTTP_FORM_BOUNDARY + HTTP_FORM_DELIMITER + CRLF);
 
-            // Responses from the server (code and message)
-            String serverResponseMessage = conn.getResponseMessage();
+            // Get response content from URL connection
+            StringBuilder serverResponseMessage = new StringBuilder();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                serverResponseMessage.append(line);
+            }
 
             // Close file streams
+            reader.close();
             fileInputStream.close();
             dos.flush();
             dos.close();
 
-            Log.d(TAG, serverResponseMessage);
-            return serverResponseMessage;
+            Log.d(TAG, serverResponseMessage.toString());
+            return serverResponseMessage.toString();
         } catch (Exception e) {
             Log.e(TAG, BAD_INTERNET_CONNECTION_ERROR);
         }

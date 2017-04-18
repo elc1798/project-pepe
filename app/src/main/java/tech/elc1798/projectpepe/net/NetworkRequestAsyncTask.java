@@ -6,7 +6,7 @@ import java.io.File;
 
 public class NetworkRequestAsyncTask extends AsyncTask<String, Void, String> {
 
-    public enum RequestProtocols {
+    private enum RequestProtocols {
         GET, POST
     }
 

@@ -66,17 +66,17 @@ public class CameraActivity extends CameraStreamingActivity {
     private HaarCascade classifier;
     private Rect cached;
     private int frameCount;
+    private boolean picSnapButtonListenerSet;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        setPictureSnapOnClickListener();
-
         fileWriteState = IOState.NOT_RUNNING;
         classifier = null;
         cached = new Rect(0, 0, 0, 0);
         frameCount = 0;
+        picSnapButtonListenerSet = false;
+
+        super.onCreate(savedInstanceState);
     }
 
     @Override
@@ -85,6 +85,7 @@ public class CameraActivity extends CameraStreamingActivity {
         if (classifier == null) {
             classifier = new HaarCascade(this, FACE_CLASSIFIER_XML_FILE);
         }
+        setPictureSnapOnClickListener();
     }
 
     @Override
@@ -132,19 +133,28 @@ public class CameraActivity extends CameraStreamingActivity {
         Point diagonalEndpointLower = new Point(cached.x + cached.width, cached.y + cached.height);
         Point diagonalMidpoint = new Point(cached.x + cached.width / 2, cached.y + cached.height / 2);
 
+        // Remove the alpha channel for us to draw on
+        Mat rgb = inputMat.clone();
+        Imgproc.cvtColor(inputMat, rgb, Imgproc.COLOR_RGBA2RGB);
+
         // Draw a bounding rectangle and center circle of detection
-        Imgproc.rectangle(inputMat, diagonalEndpointUpper, diagonalEndpointLower, COLOR_GREEN, RECTANGLE_THICKNESS);
-        Imgproc.circle(inputMat, diagonalMidpoint, CIRCLE_RADIUS, COLOR_RED, CIRCLE_THICKNESS);
+        Imgproc.rectangle(rgb, diagonalEndpointUpper, diagonalEndpointLower, COLOR_GREEN, RECTANGLE_THICKNESS);
+        Imgproc.circle(rgb, diagonalMidpoint, CIRCLE_RADIUS, COLOR_RED, CIRCLE_THICKNESS);
 
         // Increment cycle tick count
         frameCount = (frameCount + 1) % FRAME_PROCESS_RATE;
-        return inputMat;
+        return rgb;
     }
 
     /**
      * Sets the OnClickListener for the ImageButton on the CameraView
      */
     private void setPictureSnapOnClickListener() {
+        // Don't continue the function if already ran
+        if (picSnapButtonListenerSet) {
+            return;
+        }
+
         // Inner class declaration requires all variables to be final
         final CameraActivity cameraActivityContextRef = this;
 
@@ -158,6 +168,12 @@ public class CameraActivity extends CameraStreamingActivity {
 
                 Bitmap bitmap = cameraActivityContextRef.getCurrentFrameBitmap();
 
+                // If getCurrentFrameBitmap returns null, do nothing
+                if (bitmap == null) {
+                    cameraActivityContextRef.loadOpenCVBindings();
+                    return;
+                }
+
                 // Bitmaps are too large to send through intent parcelables, so we store it in a storage directory
                 String uniqueFileName = saveBitmapToUniqueFile(bitmap);
 
@@ -167,6 +183,9 @@ public class CameraActivity extends CameraStreamingActivity {
                 cameraActivityContextRef.startActivity(confirmImageIntent);
             }
         });
+
+        // Set our boolean to true so we don't keep resetting the on click listener
+        picSnapButtonListenerSet = true;
     }
 
     /**

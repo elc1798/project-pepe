@@ -89,7 +89,7 @@ public abstract class CameraStreamingActivity extends AppCompatActivity implemen
         super.onResume();
 
         // Reload the OpenCV C++ symlinks upon resume
-        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_2_0, this, openCVLoaderCallback);
+        loadOpenCVBindings();
     }
 
     @Override
@@ -123,12 +123,24 @@ public abstract class CameraStreamingActivity extends AppCompatActivity implemen
     }
 
     /**
+     * Loads an async task to load the OpenCV bindings
+     */
+    protected void loadOpenCVBindings() {
+        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_2_0, this, openCVLoaderCallback);
+    }
+
+    /**
      * Gets the bitmap stored in our image view.
      *
      * @return The current image as a bitmap
      */
     public Bitmap getCurrentFrameBitmap() {
-        return ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+        BitmapDrawable bmd = (BitmapDrawable) imageView.getDrawable();
+        if (bmd == null) {
+            return null;
+        } else {
+            return bmd.getBitmap();
+        }
     }
 
     public void stopCamera() {

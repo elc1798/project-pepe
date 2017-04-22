@@ -20,6 +20,7 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 
 import tech.elc1798.projectpepe.R;
+import tech.elc1798.projectpepe.activities.CameraActivity;
 
 /**
  * Abstracts away the overhead of streaming camera feed on Android using OpenCV
@@ -31,6 +32,7 @@ public abstract class CameraStreamingActivity extends AppCompatActivity implemen
     private FrameLayout frameLayout;
     private JavaCameraView cameraView;
     private ImageView imageView;
+    private int cameraID;
 
     /**
      * Takes in an input matrix and performs operations on the matrix, returning the resultant output matrix. The result
@@ -69,16 +71,12 @@ public abstract class CameraStreamingActivity extends AppCompatActivity implemen
         setContentView(R.layout.camera_activity_layout);
 
         frameLayout = (FrameLayout) findViewById(R.id.camera_view_frame_layout);
-
-        cameraView = new JavaCameraView(this, CameraBridgeViewBase.CAMERA_ID_FRONT);
-        cameraView.setCvCameraViewListener(this);
-        frameLayout.addView(cameraView);
+        cameraID = CameraBridgeViewBase.CAMERA_ID_FRONT;
 
         // The screen shouldn't go dim or go on standby while in the camera view
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        imageView = new ImageView(this);
-        frameLayout.addView(imageView);
+        resetCameraView();
     }
 
     /**
@@ -127,6 +125,43 @@ public abstract class CameraStreamingActivity extends AppCompatActivity implemen
      */
     protected void loadOpenCVBindings() {
         OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_2_0, this, openCVLoaderCallback);
+    }
+
+    /**
+     * Removes, re-creates, and inserts the views in the FrameLayout to reset the camera view
+     */
+    protected void resetCameraView() {
+        final CameraStreamingActivity cameraActivityRef = this;
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                frameLayout.removeAllViews();
+
+                cameraView = new JavaCameraView(cameraActivityRef, cameraID);
+                cameraView.setCvCameraViewListener(cameraActivityRef);
+                frameLayout.addView(cameraView);
+
+                imageView = new ImageView(cameraActivityRef);
+                frameLayout.addView(imageView);
+            }
+        });
+    }
+
+    protected void flipCameraView() {
+        if (cameraID == CameraBridgeViewBase.CAMERA_ID_FRONT) {
+            cameraID = CameraBridgeViewBase.CAMERA_ID_BACK;
+        } else if (cameraID == CameraBridgeViewBase.CAMERA_ID_BACK) {
+            cameraID = CameraBridgeViewBase.CAMERA_ID_FRONT;
+        } else {
+            Log.d(getTag(), "Unknown current camera state. Defaulting to front");
+
+            cameraID = CameraBridgeViewBase.CAMERA_ID_FRONT;
+        }
+
+        stopCamera();
+        resetCameraView();
+        loadOpenCVBindings();
     }
 
     /**

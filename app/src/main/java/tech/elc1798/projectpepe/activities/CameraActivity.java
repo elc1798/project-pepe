@@ -77,6 +77,9 @@ public class CameraActivity extends CameraStreamingActivity {
         picSnapButtonListenerSet = false;
 
         super.onCreate(savedInstanceState);
+
+        setToggleCameraButtonOnClickListener();
+        setPictureSnapOnClickListener();
     }
 
     @Override
@@ -85,7 +88,6 @@ public class CameraActivity extends CameraStreamingActivity {
         if (classifier == null) {
             classifier = new HaarCascade(this, FACE_CLASSIFIER_XML_FILE);
         }
-        setPictureSnapOnClickListener();
     }
 
     @Override
@@ -144,6 +146,18 @@ public class CameraActivity extends CameraStreamingActivity {
         // Increment cycle tick count
         frameCount = (frameCount + 1) % FRAME_PROCESS_RATE;
         return rgb;
+    }
+
+    private void setToggleCameraButtonOnClickListener() {
+        ImageButton flipCameraButton = (ImageButton) this.findViewById(R.id.camera_flip_button);
+        final CameraActivity cameraActivityRef = this;
+
+        flipCameraButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cameraActivityRef.flipCameraView();
+            }
+        });
     }
 
     /**

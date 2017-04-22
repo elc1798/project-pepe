@@ -28,7 +28,6 @@ public class TinderViewActivity extends AppCompatActivity {
     private static final float FULL_TRANSPARENCY = 0.0f;
     private static final float FULL_OPACITY = 1.0f;
 
-    private FrameLayout imgDisplayFrame;
     private ImageView imageBelow;
     private ImageView imageAbove;
     private ProgressBar progressBar;
@@ -44,8 +43,6 @@ public class TinderViewActivity extends AppCompatActivity {
 
         imageIDs = new ArrayList<>();
         callback = new GetImageURLCallback();
-
-        imgDisplayFrame = (FrameLayout) this.findViewById(R.id.tinder_view_img_display);
 
         imageBelow = (ImageView) this.findViewById(R.id.tinder_view_image_below);
         imageAbove = (ImageView) this.findViewById(R.id.tinder_view_image_above);

@@ -8,9 +8,44 @@
     tools:context="tech.elc1798.projectpepe.activities.ConfirmImageActivity">
 
     <FrameLayout
-        android:id="@+id/frame_layout"
+        android:id="@+id/confirm_image_button_frame_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true">
+
+        <ImageView
+            android:id="@+id/confirm_image_button_background"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:srcCompat="@android:color/background_dark"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageButton
+                android:id="@+id/confirm_image_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:layout_marginBottom="8dp"
+                android:layout_marginTop="8dp"
+                android:background="@null"
+                android:elevation="0dp"
+                android:visibility="invisible"
+                app:srcCompat="@android:drawable/ic_menu_upload"/>
+        </RelativeLayout>
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/confirm_image_button_frame_layout"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:id="@+id/confirm_image_image_view_frame_layout">
 
         <ImageView
             android:id="@+id/confirm_image_image_view"
@@ -25,27 +60,13 @@
 
             <ProgressBar
                 android:id="@+id/confirm_image_progress_bar"
-                style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large"
+                style="@android:style/Widget.DeviceDefault.ProgressBar.Large"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
                 android:layout_centerVertical="true"
                 android:indeterminate="true"/>
         </RelativeLayout>
-
     </FrameLayout>
-
-    <Button
-        android:id="@+id/confirm_image_button"
-        style="@android:style/Widget.Material.Light.Button.Small"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="16dp"
-        android:backgroundTint="@null"
-        android:text="@string/upload_image"
-        android:textStyle="bold"
-        android:visibility="invisible"/>
 
 </RelativeLayout>

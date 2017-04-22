@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -97,7 +98,7 @@ public class ConfirmImageActivity extends AppCompatActivity {
      * Sets the onClickListener of the button to upload the image to the Project PEPE server
      */
     private void setUpUploadButton() {
-        final Button uploadButton = (Button) this.findViewById(R.id.confirm_image_button);
+        final ImageButton uploadButton = (ImageButton) this.findViewById(R.id.confirm_image_button);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {

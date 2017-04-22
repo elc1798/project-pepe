@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 
 import com.squareup.picasso.Picasso;
 
@@ -30,6 +31,7 @@ public class TinderViewActivity extends AppCompatActivity {
     private FrameLayout imgDisplayFrame;
     private ImageView imageBelow;
     private ImageView imageAbove;
+    private ProgressBar progressBar;
     private ArrayList<String> imageIDs;
     private GetImageURLCallback callback;
     private GestureDetectorCompat detector;
@@ -45,17 +47,18 @@ public class TinderViewActivity extends AppCompatActivity {
 
         imgDisplayFrame = (FrameLayout) this.findViewById(R.id.tinder_view_img_display);
 
-        imageBelow = new ImageView(this);
-        imgDisplayFrame.addView(imageBelow);
+        imageBelow = (ImageView) this.findViewById(R.id.tinder_view_image_below);
+        imageAbove = (ImageView) this.findViewById(R.id.tinder_view_image_above);
 
-        imageAbove = new ImageView(this);
-        imgDisplayFrame.addView(imageAbove);
+        progressBar = (ProgressBar) this.findViewById(R.id.tinder_view_meme_load_progress_bar);
 
         getNextBatchOfImages();
         setUpCameraButton();
+        setUpNavigationButtons();
 
         currentImageIndex = 0;
         detector = new GestureDetectorCompat(this, new TinderViewTouchDetector(this));
+
     }
 
     @Override
@@ -118,6 +121,13 @@ public class TinderViewActivity extends AppCompatActivity {
     }
 
     private void getNextBatchOfImages() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                progressBar.setVisibility(View.VISIBLE);
+            }
+        });
+
         new NetworkRequestAsyncTask(callback).execute(callback.getCurrentPageURL());
     }
 
@@ -145,6 +155,24 @@ public class TinderViewActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(activityRef, CameraActivity.class);
                 activityRef.startActivity(intent);
+            }
+        });
+    }
+
+    private void setUpNavigationButtons() {
+        ImageButton leftButton = (ImageButton) this.findViewById(R.id.tinder_view_go_left);
+        leftButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                loadPreviousImage();
+            }
+        });
+
+        ImageButton rightButton = (ImageButton) this.findViewById(R.id.tinder_view_go_right);
+        rightButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                loadNextImage();
             }
         });
     }
@@ -179,6 +207,8 @@ public class TinderViewActivity extends AppCompatActivity {
 
             currentOffset = imageIDs.size();
             loadCurrentImages();
+
+            progressBar.setVisibility(View.INVISIBLE);
         }
     }
 }

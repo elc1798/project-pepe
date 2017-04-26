@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
@@ -12,6 +14,7 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 
 import tech.elc1798.projectpepe.Constants;
+import tech.elc1798.projectpepe.EditActivity;
 import tech.elc1798.projectpepe.R;
 import tech.elc1798.projectpepe.activities.extras.DepthPageTransformer;
 import tech.elc1798.projectpepe.activities.extras.ScrollableGalleryAdapter;
@@ -28,6 +31,7 @@ public class GalleryActivity extends AppCompatActivity {
 
     private static final String TAG = "PEPE_GALLERY:";
 
+    private GalleryActivity activityRef;
     private ViewPager viewPager;
     private ScrollableGalleryAdapter adapter;
     private String galleryRoute;
@@ -38,6 +42,8 @@ public class GalleryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.gallery_activity_layout);
 
+        activityRef = this;
+
         Intent intent = getIntent();
         String originalImageID = intent.getStringExtra(TINDER_VIEW_ACTIVITY_GALLERY_NAME_INTENT_EXTRA_ID);
 
@@ -46,6 +52,15 @@ public class GalleryActivity extends AppCompatActivity {
 
         ImageView originalImage = (ImageView) this.findViewById(R.id.gallery_view_original_image);
         Picasso.with(this).load(getImageURL(originalImageID)).into(originalImage);
+
+        ImageButton editButton = (ImageButton) this.findViewById(R.id.gallery_view_edit_image_button);
+        editButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent editIntent = new Intent(activityRef, EditActivity.class);
+                activityRef.startActivity(editIntent);
+            }
+        });
 
         viewPager = (ViewPager) this.findViewById(R.id.gallery_view_view_pager);
         adapter = new ScrollableGalleryAdapter(this, imageIDs, null);

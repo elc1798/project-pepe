@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="tech.elc1798.projectpepe.EditActivity">
+
+    <ImageView
+        android:id="@+id/edit_view_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:srcCompat="@android:color/background_dark"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/edit_view_image_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="64dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="64dp"
+            app:srcCompat="@android:color/holo_blue_dark"/>
+
+        <ImageButton
+            android:id="@+id/edit_view_free_draw_button"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignStart="@+id/edit_view_image_view"
+            android:layout_marginBottom="12dp"
+            android:background="@null"
+            android:padding="4dp"
+            app:srcCompat="@android:drawable/ic_menu_edit"/>
+
+        <ImageButton
+            android:id="@+id/edit_view_upload_button"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignStart="@+id/edit_view_image_view"
+            android:layout_marginTop="16dp"
+            android:background="@null"
+            android:padding="4dp"
+            app:srcCompat="@android:drawable/ic_menu_upload"/>
+
+        <ImageButton
+            android:id="@+id/edit_view_undo_button"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignTop="@+id/edit_view_upload_button"
+            android:layout_marginEnd="16dp"
+            android:layout_toStartOf="@+id/edit_view_redo_button"
+            android:background="@null"
+            android:padding="4dp"
+            app:srcCompat="@android:drawable/ic_menu_revert"/>
+
+        <ImageButton
+            android:id="@+id/edit_view_redo_button"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignEnd="@+id/edit_view_image_view"
+            android:layout_alignTop="@+id/edit_view_undo_button"
+            android:background="@null"
+            android:padding="4dp"
+            android:scaleX="-1"
+            app:srcCompat="@android:drawable/ic_menu_revert"/>
+
+        <ImageButton
+            android:id="@+id/edit_view_special_tools_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignTop="@+id/edit_view_free_draw_button"
+            android:layout_marginEnd="16dp"
+            android:background="@null"
+            android:padding="4dp"
+            app:srcCompat="@android:drawable/btn_star_big_off"/>
+
+        <ImageButton
+            android:id="@+id/edit_view_text_box_button"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignTop="@+id/edit_view_free_draw_button"
+            android:layout_marginStart="16dp"
+            android:layout_toEndOf="@+id/edit_view_free_draw_button"
+            android:adjustViewBounds="false"
+            android:background="@null"
+            android:backgroundTint="@android:color/background_light"
+            android:cropToPadding="false"
+            android:padding="4dp"
+            android:scaleType="fitCenter"
+            app:srcCompat="@mipmap/text_box_icon"/>
+
+    </RelativeLayout>
+</FrameLayout>

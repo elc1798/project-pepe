@@ -1,40 +1,34 @@
 package tech.elc1798.projectpepe.activities;
 
+import android.app.Activity;
 import android.content.Intent;
-import android.support.v4.view.GestureDetectorCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
-
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
 import tech.elc1798.projectpepe.Constants;
 import tech.elc1798.projectpepe.R;
-import tech.elc1798.projectpepe.activities.extras.TinderViewTouchDetector;
+import tech.elc1798.projectpepe.activities.extras.DepthPageTransformer;
+import tech.elc1798.projectpepe.activities.extras.ScrollableGalleryAdapter;
 import tech.elc1798.projectpepe.net.NetworkOperationCallback;
 import tech.elc1798.projectpepe.net.NetworkRequestAsyncTask;
 
 public class TinderViewActivity extends AppCompatActivity {
 
+    private static final int CAMERA_ACTIVITY_FINISH_REQUEST_CODE = 42;
     private static final String TAG = "PEPE_TINDER_VIEW:";
-    private static final float FULL_TRANSPARENCY = 0.0f;
-    private static final float FULL_OPACITY = 1.0f;
 
-    private ImageView imageBelow;
-    private ImageView imageAbove;
     private ProgressBar progressBar;
     private ArrayList<String> imageIDs;
     private GetImageURLCallback callback;
-    private GestureDetectorCompat detector;
-    private int currentImageIndex;
+    private ViewPager viewPager;
+    private ScrollableGalleryAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,77 +38,42 @@ public class TinderViewActivity extends AppCompatActivity {
         imageIDs = new ArrayList<>();
         callback = new GetImageURLCallback();
 
-        imageBelow = (ImageView) this.findViewById(R.id.tinder_view_image_below);
-        imageAbove = (ImageView) this.findViewById(R.id.tinder_view_image_above);
-
         progressBar = (ProgressBar) this.findViewById(R.id.tinder_view_meme_load_progress_bar);
+        viewPager = (ViewPager) this.findViewById(R.id.tinder_view_view_pager);
+        adapter = new ScrollableGalleryAdapter(this, imageIDs);
+        viewPager.setAdapter(adapter);
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                // If position = count - 1, then we're at the end
+                Log.d(TAG, position + " " + adapter.getCount());
+                if (position == adapter.getCount() - 1) {
+                    getNextBatchOfImages();
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+            }
+        });
+        viewPager.setPageTransformer(true, new DepthPageTransformer());
 
         getNextBatchOfImages();
         setUpCameraButton();
-        setUpNavigationButtons();
-
-        currentImageIndex = 0;
-        detector = new GestureDetectorCompat(this, new TinderViewTouchDetector(this));
-
+        setUpSyncButton();
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-
-        loadCurrentImages();
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event){
-        this.detector.onTouchEvent(event);
-        return super.onTouchEvent(event);
-    }
-
-    public void loadNextImage() {
-        if (!atEndOfImageList()) {
-            currentImageIndex++;
-            loadCurrentImages();
-        } else {
-            getNextBatchOfImages();
-        }
-    }
-
-    public void loadPreviousImage() {
-        if (!atStartOfImageList()) {
-            currentImageIndex--;
-            loadCurrentImages();
-        }
-    }
-
-    /**
-     * Does **NOT** return if the currentImageIndex is the last element of the image list. Instead, returns if we are
-     * 1 past the end last element. This mechanic is intended, as we want to show the "No more memes" image at the end,
-     * in order to allow for us to scroll to it.
-     *
-     * @return a boolean
-     */
-    public boolean atEndOfImageList() {
-        return currentImageIndex /* We don't do this: + 1 */ >= imageIDs.size();
-    }
-
-    public boolean atStartOfImageList() {
-        return currentImageIndex == 0;
-    }
-
-    /**
-     * Loads the images stored in our ArrayList of IDs into our image views. The current image is loaded into
-     * imageAbove, while the one after is loaded into imageBelow. If the image at index is the last, imageBelow is made
-     * completely transparent.
-     */
-    private void loadCurrentImages() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                loadImageAtIndexIntoImageView(currentImageIndex + 1, imageBelow);
-                loadImageAtIndexIntoImageView(currentImageIndex, imageAbove);
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == CAMERA_ACTIVITY_FINISH_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK || resultCode == Activity.RESULT_CANCELED) {
+                getNextBatchOfImages();
             }
-        });
+        }
     }
 
     private void getNextBatchOfImages() {
@@ -128,20 +87,6 @@ public class TinderViewActivity extends AppCompatActivity {
         new NetworkRequestAsyncTask(callback).execute(callback.getCurrentPageURL());
     }
 
-    private String getImageURL(String imageID) {
-        return Constants.PROJECT_SERVER_URL + imageID;
-    }
-
-    private void loadImageAtIndexIntoImageView(int index, ImageView imageView) {
-        if (index >= imageIDs.size()) {
-            Log.d(TAG, "Setting transparent: Index " + index + "/" + imageIDs.size());
-            imageView.setAlpha(FULL_TRANSPARENCY);
-        } else {
-            Log.d(TAG, "Setting opaque: Index " + index + "/" + imageIDs.size());
-            imageView.setAlpha(FULL_OPACITY);
-            Picasso.with(this).load(getImageURL(imageIDs.get(index))).into(imageView);
-        }
-    }
 
     private void setUpCameraButton() {
         ImageButton cameraButton = (ImageButton) this.findViewById(R.id.tinder_view_go_to_camera_button);
@@ -151,25 +96,17 @@ public class TinderViewActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(activityRef, CameraActivity.class);
-                activityRef.startActivity(intent);
+                activityRef.startActivityForResult(intent, CAMERA_ACTIVITY_FINISH_REQUEST_CODE);
             }
         });
     }
 
-    private void setUpNavigationButtons() {
-        ImageButton leftButton = (ImageButton) this.findViewById(R.id.tinder_view_go_left);
-        leftButton.setOnClickListener(new View.OnClickListener() {
+    private void setUpSyncButton() {
+        ImageButton syncButton = (ImageButton) this.findViewById(R.id.tinder_view_sync_button);
+        syncButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                loadPreviousImage();
-            }
-        });
-
-        ImageButton rightButton = (ImageButton) this.findViewById(R.id.tinder_view_go_right);
-        rightButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                loadNextImage();
+                getNextBatchOfImages();
             }
         });
     }
@@ -198,13 +135,17 @@ public class TinderViewActivity extends AppCompatActivity {
             for (String imagePath : imagePaths) {
                 Log.d(TAG, "Image path: " + imagePath);
                 if (imagePath.length() > 0) {
-                    imageIDs.add(imagePath);
+                    if (imageIDs.size() == 0) {
+                        imageIDs.add(imagePath);
+                    } else {
+                        // Insert the image BEFORE the last image (which is "Pepe has no more memes")
+                        imageIDs.add(imageIDs.size() - 1, imagePath);
+                    }
                 }
             }
 
             currentOffset = imageIDs.size();
-            loadCurrentImages();
-
+            adapter.notifyDataSetChanged();
             progressBar.setVisibility(View.INVISIBLE);
         }
     }

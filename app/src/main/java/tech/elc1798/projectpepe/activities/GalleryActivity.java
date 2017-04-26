@@ -29,6 +29,8 @@ import static tech.elc1798.projectpepe.activities.extras.PepeUtils.getImageURL;
 
 public class GalleryActivity extends AppCompatActivity {
 
+    public static final String GALLERY_ACTIVITY_IMG_URL_INTENT_EXTRA_ID = "gall_act_img_url_int_ext_id";
+
     private static final String TAG = "PEPE_GALLERY:";
 
     private GalleryActivity activityRef;
@@ -45,7 +47,7 @@ public class GalleryActivity extends AppCompatActivity {
         activityRef = this;
 
         Intent intent = getIntent();
-        String originalImageID = intent.getStringExtra(TINDER_VIEW_ACTIVITY_GALLERY_NAME_INTENT_EXTRA_ID);
+        final String originalImageID = intent.getStringExtra(TINDER_VIEW_ACTIVITY_GALLERY_NAME_INTENT_EXTRA_ID);
 
         galleryRoute = getGalleryRouteFromImageID(originalImageID);
         imageIDs = new ArrayList<>();
@@ -58,6 +60,7 @@ public class GalleryActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent editIntent = new Intent(activityRef, EditActivity.class);
+                editIntent.putExtra(GALLERY_ACTIVITY_IMG_URL_INTENT_EXTRA_ID, originalImageID);
                 activityRef.startActivity(editIntent);
             }
         });

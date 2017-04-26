@@ -186,24 +186,13 @@ public abstract class CameraStreamingActivity extends AppCompatActivity implemen
      * An implementation of an OpenCV Loader Callback. This the {@code onManagerConnected} method is called upon
      * the OpenCV libraries loading (either successfully or unsuccessfully).
      */
-    private BaseLoaderCallback openCVLoaderCallback = new BaseLoaderCallback(this) {
-        /**
-         * If OpenCV loads successfully, enables the camera view and calls the abstract method {@code onOpenCVLoad}.
-         *
-         * @param status {@inheritDoc}
-         */
+    private OpenCVLoaderCallback openCVLoaderCallback = new OpenCVLoaderCallback(this, getTag()) {
         @Override
-        public void onManagerConnected(int status) {
-            if (status == LoaderCallbackInterface.SUCCESS) {
-                Log.i(getTag(), "OpenCV loaded successfully");
+        public void onOpenCVLoadSuccess() {
+            // The camera view and classifier can only be instantiated upon the success of a BaseLoader
+            cameraView.enableView();
 
-                // The camera view and classifier can only be instantiated upon the success of a BaseLoader
-                cameraView.enableView();
-
-                onOpenCVLoad();
-            } else {
-                super.onManagerConnected(status);
-            }
+            onOpenCVLoad();
         }
     };
 

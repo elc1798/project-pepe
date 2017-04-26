@@ -29,6 +29,7 @@ public class TinderViewActivity extends AppCompatActivity {
     private GetImageURLCallback callback;
     private ViewPager viewPager;
     private ScrollableGalleryAdapter adapter;
+    private int currentPage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +38,7 @@ public class TinderViewActivity extends AppCompatActivity {
 
         imageIDs = new ArrayList<>();
         callback = new GetImageURLCallback();
+        currentPage = 0;
 
         progressBar = (ProgressBar) this.findViewById(R.id.tinder_view_meme_load_progress_bar);
         viewPager = (ViewPager) this.findViewById(R.id.tinder_view_view_pager);
@@ -50,10 +52,11 @@ public class TinderViewActivity extends AppCompatActivity {
             @Override
             public void onPageSelected(int position) {
                 // If position = count - 1, then we're at the end
-                Log.d(TAG, position + " " + adapter.getCount());
                 if (position == adapter.getCount() - 1) {
                     getNextBatchOfImages();
                 }
+
+                currentPage = position;
             }
 
             @Override
@@ -130,6 +133,7 @@ public class TinderViewActivity extends AppCompatActivity {
                 return;
             }
 
+            int originalCount = adapter.getCount();
             String[] imagePaths = contents.trim().split(Constants.PROJECT_SERVER_IMAGELIST_SEPARATOR);
 
             for (String imagePath : imagePaths) {
@@ -147,6 +151,15 @@ public class TinderViewActivity extends AppCompatActivity {
             currentOffset = imageIDs.size();
             adapter.notifyDataSetChanged();
             progressBar.setVisibility(View.INVISIBLE);
+
+            // Force reinstantiation of all the items, since there's a bug with ViewPager and updating the dataset:
+            // http://stackoverflow.com/questions/7369978/how-to-force-viewpager-to-re-instantiate-its-items
+            if (adapter.getCount() > originalCount) {
+                viewPager.setAdapter(adapter);
+            }
+
+            // Scroll to the page we were just on
+            viewPager.setCurrentItem(currentPage);
         }
     }
 }

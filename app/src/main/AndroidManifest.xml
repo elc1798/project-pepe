@@ -36,6 +36,8 @@
         </activity>
         <activity android:name=".activities.CameraActivity">
         </activity>
+        <activity android:name=".activities.GalleryActivity">
+        </activity>
     </application>
 
 </manifest>

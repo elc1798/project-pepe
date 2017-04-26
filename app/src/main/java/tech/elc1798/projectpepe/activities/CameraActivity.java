@@ -32,6 +32,7 @@ public class CameraActivity extends CameraStreamingActivity {
     // Public constants
     public static final String CAMERA_ACTIVITY_IMAGE_FILE_NAME_INTENT_EXTRA_ID = "camera_act_img_intent_extra_id";
     public static final String IMG_CACHE_STORAGE_DIRECTORY = "snapshots";
+
     public enum IOState {
         NOT_RUNNING, RUNNING
     }

@@ -30,7 +30,7 @@ public class PepeUtils {
      * Gets the URL for a gallery image
      *
      * @param galleryRoute The gallery's ID
-     * @param imageID The image ID to retrieve
+     * @param imageID      The image ID to retrieve
      * @return a String representing a URL
      */
     public static String getGalleryImageURL(String galleryRoute, int imageID) {

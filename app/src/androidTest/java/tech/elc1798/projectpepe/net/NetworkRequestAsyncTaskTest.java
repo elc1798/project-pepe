@@ -38,7 +38,7 @@ public class NetworkRequestAsyncTaskTest {
         CountDownLatch waiter = new CountDownLatch(1);
 
         new NetworkRequestAsyncTask(new NetworkTestCallback(waiter, "pepe is receiving memes! feels good man :')"))
-                .execute(Constants.PROJECT_SERVER_STATUS_URL);
+                .execute(Constants.PEPE_STATUS_URL);
 
         waiter.await(10, TimeUnit.SECONDS);
     }
@@ -49,7 +49,7 @@ public class NetworkRequestAsyncTaskTest {
 
         new NetworkRequestAsyncTask(
                 new NetworkTestCallback(waiter, "static/test/programmerhumor.png, static/test/feelsgood.png")
-        ).execute(Constants.PROJECT_SERVER_TEST_URL);
+        ).execute(Constants.PEPE_TEST_URL);
 
         waiter.await(10, TimeUnit.SECONDS);
     }
@@ -71,7 +71,7 @@ public class NetworkRequestAsyncTaskTest {
 
         // Call the async task with a callback
         new NetworkRequestAsyncTask(new NetworkTestCallback(waiter, randomMessage), testFile).execute(
-                Constants.PROJECT_SERVER_FILE_UPLOAD_TEST_URL
+                Constants.PEPE_FILE_UPLOAD_TEST_URL
         );
 
         // Wait for latch to countdown or for time to expire

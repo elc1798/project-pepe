@@ -9,5 +9,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/background_dark"
-        app:srcCompat="@android:color/background_dark"/>
+        android:scaleType="fitCenter"
+        app:srcCompat="@mipmap/ic_launcher"/>
 </FrameLayout>

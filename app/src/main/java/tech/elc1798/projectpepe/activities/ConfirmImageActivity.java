@@ -8,7 +8,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -113,14 +112,14 @@ public class ConfirmImageActivity extends AppCompatActivity {
                 new NetworkRequestAsyncTask(new NetworkOperationCallback() {
                     @Override
                     public void parseNetworkOperationContents(String contents) {
-                        if (contents.equals(Constants.PROJECT_SERVER_FILE_UPLOAD_SUCCESS_RESP)) {
+                        if (contents.equals(Constants.PEPE_FILE_UPLOAD_SUCCESS_RESP)) {
                             Toast.makeText(contextRef, FILE_UPLOAD_SUCCESS_MESSAGE, Toast.LENGTH_SHORT).show();
                         } else {
                             Toast.makeText(contextRef, FILE_UPLOAD_FAIL_MESSAGE, Toast.LENGTH_SHORT).show();
                         }
                         contextRef.finish();
                     }
-                }, imageFile).execute(Constants.PROJECT_SERVER_FILE_UPLOAD_URL);
+                }, imageFile).execute(Constants.PEPE_FILE_UPLOAD_URL);
             }
         });
     }

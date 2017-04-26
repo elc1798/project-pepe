@@ -21,9 +21,12 @@ import tech.elc1798.projectpepe.net.NetworkRequestAsyncTask;
 
 public class TinderViewActivity extends AppCompatActivity {
 
+    public static final String TINDER_VIEW_ACTIVITY_GALLERY_NAME_INTENT_EXTRA_ID = "tind_act_gallery_name_intent_id";
+
     private static final int CAMERA_ACTIVITY_FINISH_REQUEST_CODE = 42;
     private static final String TAG = "PEPE_TINDER_VIEW:";
 
+    private AppCompatActivity activityRef;
     private ProgressBar progressBar;
     private ArrayList<String> imageIDs;
     private GetImageURLCallback callback;
@@ -36,13 +39,23 @@ public class TinderViewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.tinder_view_layout);
 
+        activityRef = this;
+
         imageIDs = new ArrayList<>();
         callback = new GetImageURLCallback();
         currentPage = 0;
 
         progressBar = (ProgressBar) this.findViewById(R.id.tinder_view_meme_load_progress_bar);
         viewPager = (ViewPager) this.findViewById(R.id.tinder_view_view_pager);
-        adapter = new ScrollableGalleryAdapter(this, imageIDs);
+        adapter = new ScrollableGalleryAdapter(this, imageIDs, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(activityRef, GalleryActivity.class);
+                intent.putExtra(TINDER_VIEW_ACTIVITY_GALLERY_NAME_INTENT_EXTRA_ID, imageIDs.get(currentPage));
+                activityRef.startActivity(intent);
+            }
+        });
+
         viewPager.setAdapter(adapter);
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -93,7 +106,6 @@ public class TinderViewActivity extends AppCompatActivity {
 
     private void setUpCameraButton() {
         ImageButton cameraButton = (ImageButton) this.findViewById(R.id.tinder_view_go_to_camera_button);
-        final AppCompatActivity activityRef = this;
 
         cameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -123,8 +135,8 @@ public class TinderViewActivity extends AppCompatActivity {
         }
 
         String getCurrentPageURL() {
-            String params = String.format(Constants.PROJECT_SERVER_GET_PARAMETERS, currentOffset);
-            return Constants.PROJECT_SERVER_URL + params;
+            String params = String.format(Constants.PEPE_ROOT_GET_PARAMETERS, currentOffset);
+            return Constants.PEPE_ROOT_URL + params;
         }
 
         @Override
@@ -134,7 +146,7 @@ public class TinderViewActivity extends AppCompatActivity {
             }
 
             int originalCount = adapter.getCount();
-            String[] imagePaths = contents.trim().split(Constants.PROJECT_SERVER_IMAGELIST_SEPARATOR);
+            String[] imagePaths = contents.trim().split(Constants.PEPE_IMAGELIST_SEPARATOR);
 
             for (String imagePath : imagePaths) {
                 Log.d(TAG, "Image path: " + imagePath);

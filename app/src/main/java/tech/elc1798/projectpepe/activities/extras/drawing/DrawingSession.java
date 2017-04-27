@@ -48,6 +48,7 @@ public class DrawingSession {
             public void onOpenCVLoadSuccess() {
                 Mat image = new Mat(inputImage.getHeight(), inputImage.getWidth(), CvType.CV_8UC1);
                 Utils.bitmapToMat(inputImage, image);
+                Imgproc.cvtColor(image, image, Imgproc.COLOR_RGBA2RGB);
 
                 undoStack = new LinkedList<>();
                 undoStack.addFirst(image);

@@ -1,46 +1,65 @@
 package tech.elc1798.projectpepe;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.annotation.ColorInt;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 
 import com.pes.androidmaterialcolorpickerdialog.ColorPicker;
 import com.pes.androidmaterialcolorpickerdialog.ColorPickerCallback;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import tech.elc1798.projectpepe.activities.GalleryActivity;
 import tech.elc1798.projectpepe.activities.extras.drawing.DrawingSession;
+import tech.elc1798.projectpepe.net.FileUploader;
 
+import static tech.elc1798.projectpepe.Constants.COMPRESSION_RATE;
+import static tech.elc1798.projectpepe.Constants.IMG_CACHE_FILENAME_FORMAT;
+import static tech.elc1798.projectpepe.Constants.IMG_CACHE_STORAGE_DIRECTORY;
+import static tech.elc1798.projectpepe.activities.extras.PepeUtils.getGalleryIDFromRoute;
+import static tech.elc1798.projectpepe.activities.extras.PepeUtils.getGalleryRouteFromImageID;
 import static tech.elc1798.projectpepe.activities.extras.PepeUtils.getImageURL;
 
 public class EditActivity extends AppCompatActivity {
 
-    private static String TEXT_BOX_TITLE = "New text box";
-    private static String TEXT_BOX_DEFAULT_TEXT = "Your text here.";
-    private static String TEXT_BOX_POSITIVE_BUTTON_LABEL = "Confirm";
-    private static String TEXT_BOX_NEGATIVE_BUTTON_LABEL = "Cancel";
-    private static String SPECIAL_TOOLS_TITLE = "Special Actions";
-    private static int RED_CHANNEL_INDEX = 0;
-    private static int GREEN_CHANNEL_INDEX = 1;
-    private static int BLUE_CHANNEL_INDEX = 2;
-    private static int RED_SHIFT_AMOUNT = 16;
-    private static int GREEN_SHIFT_AMOUNT = 8;
-    private static int BLUE_SHIFT_AMOUNT = 0;
-    private static int COLOR_CHANNEL_BITMASK = 0xFF;
+    private static final String TAG = "PEPE_EDITOR:";
+    private static final String TEXT_BOX_TITLE = "New text box";
+    private static final String TEXT_BOX_DEFAULT_TEXT = "Your text here.";
+    private static final String TEXT_BOX_POSITIVE_BUTTON_LABEL = "Confirm";
+    private static final String TEXT_BOX_NEGATIVE_BUTTON_LABEL = "Cancel";
+    private static final String SPECIAL_TOOLS_TITLE = "Special Actions";
+    private static final int RED_CHANNEL_INDEX = 0;
+    private static final int GREEN_CHANNEL_INDEX = 1;
+    private static final int BLUE_CHANNEL_INDEX = 2;
+    private static final int RED_SHIFT_AMOUNT = 16;
+    private static final int GREEN_SHIFT_AMOUNT = 8;
+    private static final int BLUE_SHIFT_AMOUNT = 0;
+    private static final int COLOR_CHANNEL_BITMASK = 0xFF;
+    private static final int COUNTDOWN_LATCH_WAIT_TIME = 0;
 
+    private String originalImageID;
     private ImageView imageView;
     private ImageButton confirmActionButton;
     private ImageButton colorWheelButton;
+    private ProgressBar progressBar;
     private DrawingSession session;
 
     @Override
@@ -49,7 +68,9 @@ public class EditActivity extends AppCompatActivity {
         setContentView(R.layout.edit_activity_layout);
 
         Intent intent = getIntent();
-        String originalImageID = intent.getStringExtra(GalleryActivity.GALLERY_ACTIVITY_IMG_URL_INTENT_EXTRA_ID);
+        originalImageID = intent.getStringExtra(GalleryActivity.GALLERY_ACTIVITY_IMG_URL_INTENT_EXTRA_ID);
+
+        progressBar = (ProgressBar) this.findViewById(R.id.edit_view_progress_bar);
 
         setUpImageView(originalImageID);
         setUpControlButtons();
@@ -57,6 +78,7 @@ public class EditActivity extends AppCompatActivity {
         setUpConfirmActionButton();
         setUpColorWheelButton();
         setUpSpecialButton();
+        setUpUploadButton();
     }
 
     /**
@@ -109,6 +131,7 @@ public class EditActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 session.undo();
+                setConfirmActionButtonVisibility(View.INVISIBLE);
                 updateImage();
             }
         });
@@ -118,6 +141,7 @@ public class EditActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 session.redo();
+                setConfirmActionButtonVisibility(View.INVISIBLE);
                 updateImage();
             }
         });
@@ -191,6 +215,9 @@ public class EditActivity extends AppCompatActivity {
                         // Update the background of the button to reflect the color we chose
                         colorWheelButton.setBackgroundColor(color);
 
+                        // Update image to reflect color changes
+                        updateImage();
+
                         cp.dismiss();
                     }
                 });
@@ -220,6 +247,16 @@ public class EditActivity extends AppCompatActivity {
         });
     }
 
+    private void setUpUploadButton() {
+        ImageButton uploadButton = (ImageButton) this.findViewById(R.id.edit_view_upload_button);
+        uploadButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                saveImageAndUpload();
+            }
+        });
+    }
+
     private void updateImage() {
         runOnUiThread(new Runnable() {
             @Override
@@ -236,5 +273,62 @@ public class EditActivity extends AppCompatActivity {
                 confirmActionButton.setVisibility(visible);
             }
         });
+    }
+
+    private void setProgressBarVisibility(final int visibility) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                progressBar.setVisibility(visibility);
+            }
+        });
+    }
+
+    private void saveImageAndUpload() {
+        File imgDirectory = this.getDir(
+                IMG_CACHE_STORAGE_DIRECTORY,
+                Context.MODE_PRIVATE
+        );
+
+        String uniqueFileName = String.format(
+                IMG_CACHE_FILENAME_FORMAT,
+                Long.toString(System.currentTimeMillis())
+        );
+
+        final File imgFile = new File(imgDirectory, uniqueFileName);
+
+        final Thread ioThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                setProgressBarVisibility(View.VISIBLE);
+
+                // Write to file
+                try {
+                    FileOutputStream outputStream = new FileOutputStream(imgFile);
+                    session.getBitmap().compress(Bitmap.CompressFormat.PNG, COMPRESSION_RATE, outputStream);
+                    outputStream.close();
+                } catch (Exception e) {
+                    Log.d(TAG, "File saving failed!");
+                    return;
+                }
+
+                String galleryUploadURL = Constants.PEPE_FILE_UPLOAD_URL + String.format(
+                        Constants.PEPE_GALLERY_ID_GET_PARAMETER,
+                        getGalleryIDFromRoute(getGalleryRouteFromImageID(originalImageID))
+                );
+
+                CountDownLatch latch = new CountDownLatch(1);
+                FileUploader.uploadFile(EditActivity.this, imgFile, galleryUploadURL, latch);
+
+                try {
+                    latch.await(COUNTDOWN_LATCH_WAIT_TIME, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    Log.d(TAG, "CountDownLatch interrupted!");
+                }
+
+                EditActivity.this.finish();
+            }
+        });
+        ioThread.start();
     }
 }

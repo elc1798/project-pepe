@@ -12,9 +12,14 @@ public class Constants {
     public static final String PEPE_STATUS_URL = "https://project-pepe-imgs.herokuapp.com/status/";
     public static final String PEPE_TEST_URL = "https://project-pepe-imgs.herokuapp.com/test/";
     public static final String PEPE_GALLERY_SIZE_URL = "https://project-pepe-imgs.herokuapp.com/gallerycount/";
-    public static final String PEPE_GALLERY_SIZE_GET_PARAMETERS = "?gallery_id=%s";
+    public static final String PEPE_GALLERY_ID_GET_PARAMETER = "?gallery_id=%s";
     public static final String PEPE_IMAGE_EXTENSION = ".png";
 
     public static final String URL_PATH_SEPARATOR = "/";
+    public static final String IMG_CACHE_STORAGE_DIRECTORY = "snapshots";
+    public static final String IMG_CACHE_FILENAME_FORMAT = "%s.png";
+    public static final String FILE_UPLOAD_SUCCESS_MESSAGE = "Image successfully uploaded!";
+    public static final String FILE_UPLOAD_FAIL_MESSAGE = "Server could not save uploaded image!";
+    public static final int COMPRESSION_RATE = 100;
 
 }

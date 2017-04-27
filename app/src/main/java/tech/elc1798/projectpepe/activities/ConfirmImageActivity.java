@@ -15,19 +15,25 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import tech.elc1798.projectpepe.Constants;
 import tech.elc1798.projectpepe.R;
+import tech.elc1798.projectpepe.net.FileUploader;
 import tech.elc1798.projectpepe.net.NetworkOperationCallback;
 import tech.elc1798.projectpepe.net.NetworkRequestAsyncTask;
+
+import static tech.elc1798.projectpepe.Constants.FILE_UPLOAD_FAIL_MESSAGE;
+import static tech.elc1798.projectpepe.Constants.FILE_UPLOAD_SUCCESS_MESSAGE;
+import static tech.elc1798.projectpepe.Constants.IMG_CACHE_STORAGE_DIRECTORY;
 
 public class ConfirmImageActivity extends AppCompatActivity {
 
     private static final String TAG = "PEPE_CONFIRM_IMG:";
     private static final String ERROR_SETTING_IMAGE = "Could not set image";
-    private static final String FILE_UPLOAD_SUCCESS_MESSAGE = "Image successfully uploaded!";
-    private static final String FILE_UPLOAD_FAIL_MESSAGE = "Server could not save uploaded image!";
     private static final String THREAD_SLEEP_INTERRUPT_MESSAGE = "Thread sleep interrupted";
+    private static final int COUNTDOWN_LATCH_WAIT_TIME = 0;
     private static final int THREAD_SLEEP_TIME = 100;
 
     private File imageFile;
@@ -38,10 +44,10 @@ public class ConfirmImageActivity extends AppCompatActivity {
         setContentView(R.layout.confirm_image_activity_layout);
 
         Intent intent = this.getIntent();
-        String imageFilename = intent.getStringExtra(CameraActivity.CAMERA_ACTIVITY_IMAGE_FILE_NAME_INTENT_EXTRA_ID);
+        String imageFilename = intent.getStringExtra(CameraActivity.CONFIRM_IMAGE_FILE_NAME_INTENT_EXTRA_ID);
 
         File imgDirectory = this.getDir(
-                CameraActivity.IMG_CACHE_STORAGE_DIRECTORY,
+                IMG_CACHE_STORAGE_DIRECTORY,
                 Context.MODE_PRIVATE
         );
 
@@ -105,21 +111,18 @@ public class ConfirmImageActivity extends AppCompatActivity {
             }
         });
 
-        final ConfirmImageActivity contextRef = this;
         uploadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new NetworkRequestAsyncTask(new NetworkOperationCallback() {
-                    @Override
-                    public void parseNetworkOperationContents(String contents) {
-                        if (contents.equals(Constants.PEPE_FILE_UPLOAD_SUCCESS_RESP)) {
-                            Toast.makeText(contextRef, FILE_UPLOAD_SUCCESS_MESSAGE, Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(contextRef, FILE_UPLOAD_FAIL_MESSAGE, Toast.LENGTH_SHORT).show();
-                        }
-                        contextRef.finish();
-                    }
-                }, imageFile).execute(Constants.PEPE_FILE_UPLOAD_URL);
+                CountDownLatch latch = new CountDownLatch(1);
+                FileUploader.uploadFile(ConfirmImageActivity.this, imageFile, Constants.PEPE_FILE_UPLOAD_URL, latch);
+
+                try {
+                    latch.await(COUNTDOWN_LATCH_WAIT_TIME, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    Log.d(TAG, "CountDownLatch interrupted!");
+                }
+                ConfirmImageActivity.this.finish();
             }
         });
     }

@@ -1,5 +1,6 @@
 package tech.elc1798.projectpepe.activities;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
@@ -32,10 +33,12 @@ public class GalleryActivity extends AppCompatActivity {
     public static final String GALLERY_ACTIVITY_IMG_URL_INTENT_EXTRA_ID = "gall_act_img_url_int_ext_id";
 
     private static final String TAG = "PEPE_GALLERY:";
+    private static final int EDIT_ACTIVITY_FINISH_REQUEST_CODE = 57;
 
     private ViewPager viewPager;
     private ScrollableGalleryAdapter adapter;
     private String galleryRoute;
+    private String gallerySizeURL;
     private ArrayList<String> imageIDs;
 
     @Override
@@ -58,7 +61,7 @@ public class GalleryActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent editIntent = new Intent(GalleryActivity.this, EditActivity.class);
                 editIntent.putExtra(GALLERY_ACTIVITY_IMG_URL_INTENT_EXTRA_ID, originalImageID);
-                GalleryActivity.this.startActivity(editIntent);
+                GalleryActivity.this.startActivityForResult(editIntent, EDIT_ACTIVITY_FINISH_REQUEST_CODE);
             }
         });
 
@@ -67,16 +70,25 @@ public class GalleryActivity extends AppCompatActivity {
         viewPager.setPageTransformer(true, new DepthPageTransformer());
 
         String galleryID = getGalleryIDFromRoute(galleryRoute);
-        String gallerySizeURL = Constants.PEPE_GALLERY_SIZE_URL + String.format(
-                Constants.PEPE_GALLERY_SIZE_GET_PARAMETERS, galleryID
+
+        gallerySizeURL = Constants.PEPE_GALLERY_SIZE_URL + String.format(
+                Constants.PEPE_GALLERY_ID_GET_PARAMETER, galleryID
         );
 
         Log.d(TAG, gallerySizeURL);
         new NetworkRequestAsyncTask(new GetNumGalleryImagesCallback()).execute(gallerySizeURL);
     }
 
-    private class GetNumGalleryImagesCallback extends NetworkOperationCallback {
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == EDIT_ACTIVITY_FINISH_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK || resultCode == Activity.RESULT_CANCELED) {
+                new NetworkRequestAsyncTask(new GetNumGalleryImagesCallback()).execute(gallerySizeURL);
+            }
+        }
+    }
 
+    private class GetNumGalleryImagesCallback extends NetworkOperationCallback {
         @Override
         public void parseNetworkOperationContents(String contents) {
             int numImages;
@@ -88,7 +100,7 @@ public class GalleryActivity extends AppCompatActivity {
                 return;
             }
 
-            for (int i = 0; i < numImages; i++) {
+            for (int i = imageIDs.size(); i < numImages; i++) {
                 imageIDs.add(getGalleryImageURL(galleryRoute, i));
             }
 

@@ -18,14 +18,17 @@ import java.io.IOException;
 import tech.elc1798.projectpepe.R;
 import tech.elc1798.projectpepe.imgprocessing.CameraStreamingActivity;
 
+import static tech.elc1798.projectpepe.Constants.COMPRESSION_RATE;
+import static tech.elc1798.projectpepe.Constants.IMG_CACHE_FILENAME_FORMAT;
+import static tech.elc1798.projectpepe.Constants.IMG_CACHE_STORAGE_DIRECTORY;
+
 /**
  * Implementation of {@code CameraStreamingActivity}
  */
 public class CameraActivity extends CameraStreamingActivity {
 
     // Public constants
-    public static final String CAMERA_ACTIVITY_IMAGE_FILE_NAME_INTENT_EXTRA_ID = "camera_act_img_intent_extra_id";
-    public static final String IMG_CACHE_STORAGE_DIRECTORY = "snapshots";
+    public static final String CONFIRM_IMAGE_FILE_NAME_INTENT_EXTRA_ID = "camera_act_img_intent_extra_id";
 
     public enum IOState {
         NOT_RUNNING, RUNNING
@@ -34,8 +37,6 @@ public class CameraActivity extends CameraStreamingActivity {
     // Private constants
     private static final String TAG = "PEPE_CAMERA:";
     private static final String UNABLE_TO_SAVE_IMG = "Unable to save image!";
-    private static final String IMG_CACHE_FILENAME_FORMAT = "%s.png";
-    private static final int COMPRESSION_RATE = 100;
 
     // Private statics
     private static IOState fileWriteState;
@@ -124,7 +125,7 @@ public class CameraActivity extends CameraStreamingActivity {
 
                 // Spawn the intent
                 Intent confirmImageIntent = new Intent(CameraActivity.this, ConfirmImageActivity.class);
-                confirmImageIntent.putExtra(CAMERA_ACTIVITY_IMAGE_FILE_NAME_INTENT_EXTRA_ID, uniqueFileName);
+                confirmImageIntent.putExtra(CONFIRM_IMAGE_FILE_NAME_INTENT_EXTRA_ID, uniqueFileName);
                 CameraActivity.this.startActivity(confirmImageIntent);
             }
         });

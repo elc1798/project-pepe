@@ -1,14 +1,16 @@
 package tech.elc1798.projectpepe;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.annotation.ColorInt;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
@@ -23,6 +25,11 @@ import static tech.elc1798.projectpepe.activities.extras.PepeUtils.getImageURL;
 
 public class EditActivity extends AppCompatActivity {
 
+    private static String TEXT_BOX_TITLE = "New text box";
+    private static String TEXT_BOX_DEFAULT_TEXT = "Your text here.";
+    private static String TEXT_BOX_POSITIVE_BUTTON_LABEL = "Confirm";
+    private static String TEXT_BOX_NEGATIVE_BUTTON_LABEL = "Cancel";
+    private static String SPECIAL_TOOLS_TITLE = "Special Actions";
     private static int RED_CHANNEL_INDEX = 0;
     private static int GREEN_CHANNEL_INDEX = 1;
     private static int BLUE_CHANNEL_INDEX = 2;
@@ -33,6 +40,7 @@ public class EditActivity extends AppCompatActivity {
 
     private ImageView imageView;
     private ImageButton confirmActionButton;
+    private ImageButton colorWheelButton;
     private DrawingSession session;
 
     @Override
@@ -48,6 +56,7 @@ public class EditActivity extends AppCompatActivity {
         setUpTextBoxButton();
         setUpConfirmActionButton();
         setUpColorWheelButton();
+        setUpSpecialButton();
     }
 
     /**
@@ -65,8 +74,6 @@ public class EditActivity extends AppCompatActivity {
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                Log.d("PEPE_DRAW", event.toString());
-
                 int action = event.getAction();
 
                 switch (action) {
@@ -117,13 +124,30 @@ public class EditActivity extends AppCompatActivity {
     }
 
     private void setUpTextBoxButton() {
-        ImageButton textBoxButton = (ImageButton) this.findViewById(R.id.edit_view_text_box_button);
+        final ImageButton textBoxButton = (ImageButton) this.findViewById(R.id.edit_view_text_box_button);
         textBoxButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                session.setPreviewTextBox("TESTING TESTING");
-                setConfirmActionButtonVisibility(View.VISIBLE);
-                updateImage();
+                final EditText textBoxText = new EditText(EditActivity.this);
+                textBoxText.setHint(TEXT_BOX_DEFAULT_TEXT);
+
+                // Spawn alert dialog with text input "JavaScript cascade" style
+                new AlertDialog.Builder(EditActivity.this)
+                        .setTitle(TEXT_BOX_TITLE)
+                        .setView(textBoxText)
+                        .setPositiveButton(TEXT_BOX_POSITIVE_BUTTON_LABEL, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                session.setPreviewTextBox(textBoxText.getText().toString());
+                                setConfirmActionButtonVisibility(View.VISIBLE);
+                                updateImage();
+                            }
+                        })
+                        .setNegativeButton(TEXT_BOX_NEGATIVE_BUTTON_LABEL, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                            }
+                        })
+                        .show();
             }
         });
     }
@@ -141,7 +165,7 @@ public class EditActivity extends AppCompatActivity {
     }
 
     public void setUpColorWheelButton() {
-        ImageButton colorWheelButton = (ImageButton) this.findViewById(R.id.edit_view_color_wheel_button);
+        colorWheelButton = (ImageButton) this.findViewById(R.id.edit_view_color_wheel_button);
         colorWheelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -163,11 +187,35 @@ public class EditActivity extends AppCompatActivity {
                                 (color >> GREEN_SHIFT_AMOUNT) & COLOR_CHANNEL_BITMASK,
                                 (color >> BLUE_SHIFT_AMOUNT) & COLOR_CHANNEL_BITMASK
                         );
+
+                        // Update the background of the button to reflect the color we chose
+                        colorWheelButton.setBackgroundColor(color);
+
+                        cp.dismiss();
                     }
                 });
 
                 // Show the dialog
                 cp.show();
+            }
+        });
+    }
+
+    private void setUpSpecialButton() {
+        ImageButton specialButton = (ImageButton) this.findViewById(R.id.edit_view_special_tools_button);
+        specialButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new AlertDialog.Builder(EditActivity.this)
+                        .setTitle(SPECIAL_TOOLS_TITLE)
+                        .setItems(session.getSpecialItemNames(), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                session.performSpecialAction(which);
+                                updateImage();
+                            }
+                        })
+                        .show();
             }
         });
     }

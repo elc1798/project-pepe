@@ -9,11 +9,6 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfRect;
-import org.opencv.core.Point;
-import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
-import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
@@ -22,7 +17,6 @@ import java.io.IOException;
 
 import tech.elc1798.projectpepe.R;
 import tech.elc1798.projectpepe.imgprocessing.CameraStreamingActivity;
-import tech.elc1798.projectpepe.imgprocessing.HaarCascade;
 
 /**
  * Implementation of {@code CameraStreamingActivity}
@@ -39,21 +33,9 @@ public class CameraActivity extends CameraStreamingActivity {
 
     // Private constants
     private static final String TAG = "PEPE_CAMERA:";
-    private static final String FACE_CLASSIFIER_XML_FILE = "frontalfacecascade.xml";
     private static final String UNABLE_TO_SAVE_IMG = "Unable to save image!";
     private static final String IMG_CACHE_FILENAME_FORMAT = "%s.png";
-    private static final double CLASSIFIER_SCALE_FACTOR = 1.1;
-    private static final int MIN_SIZE_WIDTH = 250;
-    private static final int MIN_SIZE_HEIGHT = 150;
-    private static final int MAX_SIZE_WIDTH = 2000;
-    private static final int MAX_SIZE_HEIGHT = 2000;
-    private static final int RECTANGLE_THICKNESS = 3;
-    private static final int CIRCLE_RADIUS = 1;
-    private static final int CIRCLE_THICKNESS = 5;
-    private static final int FRAME_PROCESS_RATE = 8;
     private static final int COMPRESSION_RATE = 100;
-    private static final Scalar COLOR_GREEN = new Scalar(0, 255, 0);
-    private static final Scalar COLOR_RED = new Scalar(255, 0, 0);
 
     // Private statics
     private static IOState fileWriteState;
@@ -64,17 +46,11 @@ public class CameraActivity extends CameraStreamingActivity {
     }
 
     // Private instance variables
-    private HaarCascade classifier;
-    private Rect cached;
-    private int frameCount;
     private boolean picSnapButtonListenerSet;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         fileWriteState = IOState.NOT_RUNNING;
-        classifier = null;
-        cached = new Rect(0, 0, 0, 0);
-        frameCount = 0;
         picSnapButtonListenerSet = false;
 
         super.onCreate(savedInstanceState);
@@ -85,10 +61,6 @@ public class CameraActivity extends CameraStreamingActivity {
 
     @Override
     public void onOpenCVLoad() {
-        // If the classifier is not yet instantiated, instantiate it.
-        if (classifier == null) {
-            classifier = new HaarCascade(this, FACE_CLASSIFIER_XML_FILE);
-        }
     }
 
     @Override
@@ -97,55 +69,17 @@ public class CameraActivity extends CameraStreamingActivity {
     }
 
     /**
-     * Implementation: Runs face detection on the input frame
+     * Implementation: Remove the alpha channel of the image
      *
      * @param inputMat The matrix representation of the image (frame) captured by the camera
      * @return The input picture with the largest detected face boxed.
      */
     @Override
     public Mat processImage(Mat inputMat) {
-        // Create a grayscaled version of our image
-        Mat grayscaleNormalized = inputMat.clone();
-        Imgproc.cvtColor(inputMat, grayscaleNormalized, Imgproc.COLOR_RGB2GRAY);
-
-        // Use equalizeHist to normalize the lighting (brightness) of the image
-        Imgproc.equalizeHist(grayscaleNormalized, grayscaleNormalized);
-
-        // If the classifier is usable, and we are on the zeroth iteration of our cycle, get the largest detection of
-        // our HaarCascade classifier
-        if (!classifier.isEmpty() && frameCount == 0) {
-            MatOfRect detections = classifier.detect(
-                    grayscaleNormalized,
-                    CLASSIFIER_SCALE_FACTOR,
-                    new Size(MIN_SIZE_WIDTH, MIN_SIZE_HEIGHT),
-                    new Size(MAX_SIZE_WIDTH, MAX_SIZE_HEIGHT)
-            );
-
-            if (detections.toArray().length != 0) {
-                cached = new Rect(0, 0, 0, 0);
-            }
-
-            for (Rect rect : detections.toArray()) {
-                if (rect.area() > cached.area()) {
-                    cached = rect;
-                }
-            }
-        }
-
-        Point diagonalEndpointUpper = new Point(cached.x, cached.y);
-        Point diagonalEndpointLower = new Point(cached.x + cached.width, cached.y + cached.height);
-        Point diagonalMidpoint = new Point(cached.x + cached.width / 2, cached.y + cached.height / 2);
-
         // Remove the alpha channel for us to draw on
         Mat rgb = inputMat.clone();
         Imgproc.cvtColor(inputMat, rgb, Imgproc.COLOR_RGBA2RGB);
 
-        // Draw a bounding rectangle and center circle of detection
-        Imgproc.rectangle(rgb, diagonalEndpointUpper, diagonalEndpointLower, COLOR_GREEN, RECTANGLE_THICKNESS);
-        Imgproc.circle(rgb, diagonalMidpoint, CIRCLE_RADIUS, COLOR_RED, CIRCLE_THICKNESS);
-
-        // Increment cycle tick count
-        frameCount = (frameCount + 1) % FRAME_PROCESS_RATE;
         return rgb;
     }
 

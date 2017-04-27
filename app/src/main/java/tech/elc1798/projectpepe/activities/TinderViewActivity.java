@@ -26,7 +26,6 @@ public class TinderViewActivity extends AppCompatActivity {
     private static final int CAMERA_ACTIVITY_FINISH_REQUEST_CODE = 42;
     private static final String TAG = "PEPE_TINDER_VIEW:";
 
-    private AppCompatActivity activityRef;
     private ProgressBar progressBar;
     private ArrayList<String> imageIDs;
     private GetImageURLCallback callback;
@@ -39,8 +38,6 @@ public class TinderViewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.tinder_view_layout);
 
-        activityRef = this;
-
         imageIDs = new ArrayList<>();
         callback = new GetImageURLCallback();
         currentPage = 0;
@@ -50,9 +47,9 @@ public class TinderViewActivity extends AppCompatActivity {
         adapter = new ScrollableGalleryAdapter(this, imageIDs, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(activityRef, GalleryActivity.class);
+                Intent intent = new Intent(TinderViewActivity.this, GalleryActivity.class);
                 intent.putExtra(TINDER_VIEW_ACTIVITY_GALLERY_NAME_INTENT_EXTRA_ID, imageIDs.get(currentPage));
-                activityRef.startActivity(intent);
+                TinderViewActivity.this.startActivity(intent);
             }
         });
 
@@ -110,8 +107,8 @@ public class TinderViewActivity extends AppCompatActivity {
         cameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(activityRef, CameraActivity.class);
-                activityRef.startActivityForResult(intent, CAMERA_ACTIVITY_FINISH_REQUEST_CODE);
+                Intent intent = new Intent(TinderViewActivity.this, CameraActivity.class);
+                TinderViewActivity.this.startActivityForResult(intent, CAMERA_ACTIVITY_FINISH_REQUEST_CODE);
             }
         });
     }

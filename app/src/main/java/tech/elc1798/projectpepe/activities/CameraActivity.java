@@ -151,12 +151,11 @@ public class CameraActivity extends CameraStreamingActivity {
 
     private void setToggleCameraButtonOnClickListener() {
         ImageButton flipCameraButton = (ImageButton) this.findViewById(R.id.camera_flip_button);
-        final CameraActivity cameraActivityRef = this;
 
         flipCameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cameraActivityRef.flipCameraView();
+                CameraActivity.this.flipCameraView();
             }
         });
     }
@@ -170,9 +169,6 @@ public class CameraActivity extends CameraStreamingActivity {
             return;
         }
 
-        // Inner class declaration requires all variables to be final
-        final CameraActivity cameraActivityContextRef = this;
-
         // Get the ImageButton and set its OnClickListener
         ImageButton imgButton = (ImageButton) this.findViewById(R.id.camera_button);
         imgButton.setOnClickListener(new View.OnClickListener() {
@@ -181,11 +177,11 @@ public class CameraActivity extends CameraStreamingActivity {
                 // Stop the camera
                 stopCamera();
 
-                Bitmap bitmap = cameraActivityContextRef.getCurrentFrameBitmap();
+                Bitmap bitmap = CameraActivity.this.getCurrentFrameBitmap();
 
                 // If getCurrentFrameBitmap returns null, do nothing
                 if (bitmap == null) {
-                    cameraActivityContextRef.loadOpenCVBindings();
+                    CameraActivity.this.loadOpenCVBindings();
                     return;
                 }
 
@@ -193,9 +189,9 @@ public class CameraActivity extends CameraStreamingActivity {
                 String uniqueFileName = saveBitmapToUniqueFile(bitmap);
 
                 // Spawn the intent
-                Intent confirmImageIntent = new Intent(cameraActivityContextRef, ConfirmImageActivity.class);
+                Intent confirmImageIntent = new Intent(CameraActivity.this, ConfirmImageActivity.class);
                 confirmImageIntent.putExtra(CAMERA_ACTIVITY_IMAGE_FILE_NAME_INTENT_EXTRA_ID, uniqueFileName);
-                cameraActivityContextRef.startActivity(confirmImageIntent);
+                CameraActivity.this.startActivity(confirmImageIntent);
             }
         });
 
@@ -212,8 +208,6 @@ public class CameraActivity extends CameraStreamingActivity {
      * @throws IOException Upon error during file read / write
      */
     private String saveBitmapToUniqueFile(final Bitmap bitmap) {
-        final CameraActivity cameraActivityContextRef = this;
-
         File imgDirectory = this.getDir(
                 IMG_CACHE_STORAGE_DIRECTORY,
                 Context.MODE_PRIVATE
@@ -236,7 +230,7 @@ public class CameraActivity extends CameraStreamingActivity {
                     bitmap.compress(Bitmap.CompressFormat.PNG, COMPRESSION_RATE, outputStream);
                     outputStream.close();
                 } catch (Exception e) {
-                    Toast.makeText(cameraActivityContextRef, UNABLE_TO_SAVE_IMG, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(CameraActivity.this, UNABLE_TO_SAVE_IMG, Toast.LENGTH_SHORT).show();
                 } finally {
                     CameraActivity.fileWriteState = IOState.NOT_RUNNING;
                 }

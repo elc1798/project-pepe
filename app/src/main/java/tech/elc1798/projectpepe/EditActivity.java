@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.support.annotation.ColorInt;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -11,6 +12,8 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
+import com.pes.androidmaterialcolorpickerdialog.ColorPicker;
+import com.pes.androidmaterialcolorpickerdialog.ColorPickerCallback;
 import com.squareup.picasso.Picasso;
 
 import tech.elc1798.projectpepe.activities.GalleryActivity;
@@ -19,6 +22,14 @@ import tech.elc1798.projectpepe.activities.extras.drawing.DrawingSession;
 import static tech.elc1798.projectpepe.activities.extras.PepeUtils.getImageURL;
 
 public class EditActivity extends AppCompatActivity {
+
+    private static int RED_CHANNEL_INDEX = 0;
+    private static int GREEN_CHANNEL_INDEX = 1;
+    private static int BLUE_CHANNEL_INDEX = 2;
+    private static int RED_SHIFT_AMOUNT = 16;
+    private static int GREEN_SHIFT_AMOUNT = 8;
+    private static int BLUE_SHIFT_AMOUNT = 0;
+    private static int COLOR_CHANNEL_BITMASK = 0xFF;
 
     private ImageView imageView;
     private ImageButton confirmActionButton;
@@ -36,6 +47,7 @@ public class EditActivity extends AppCompatActivity {
         setUpControlButtons();
         setUpTextBoxButton();
         setUpConfirmActionButton();
+        setUpColorWheelButton();
     }
 
     /**
@@ -124,6 +136,38 @@ public class EditActivity extends AppCompatActivity {
                 session.commitTextBox();
                 updateImage();
                 setConfirmActionButtonVisibility(View.INVISIBLE);
+            }
+        });
+    }
+
+    public void setUpColorWheelButton() {
+        ImageButton colorWheelButton = (ImageButton) this.findViewById(R.id.edit_view_color_wheel_button);
+        colorWheelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Create a dialog with the current color value as default
+                double[] currentColor = session.getColor().val;
+                final ColorPicker cp = new ColorPicker(
+                        EditActivity.this,
+                        (int) currentColor[RED_CHANNEL_INDEX],
+                        (int) currentColor[GREEN_CHANNEL_INDEX],
+                        (int) currentColor[BLUE_CHANNEL_INDEX]
+                );
+
+                // Set the callback for the dialog
+                cp.setCallback(new ColorPickerCallback() {
+                    @Override
+                    public void onColorChosen(@ColorInt int color) {
+                        session.setColor(
+                                (color >> RED_SHIFT_AMOUNT) & COLOR_CHANNEL_BITMASK,
+                                (color >> GREEN_SHIFT_AMOUNT) & COLOR_CHANNEL_BITMASK,
+                                (color >> BLUE_SHIFT_AMOUNT) & COLOR_CHANNEL_BITMASK
+                        );
+                    }
+                });
+
+                // Show the dialog
+                cp.show();
             }
         });
     }

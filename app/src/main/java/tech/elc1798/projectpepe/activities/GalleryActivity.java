@@ -33,7 +33,6 @@ public class GalleryActivity extends AppCompatActivity {
 
     private static final String TAG = "PEPE_GALLERY:";
 
-    private GalleryActivity activityRef;
     private ViewPager viewPager;
     private ScrollableGalleryAdapter adapter;
     private String galleryRoute;
@@ -43,8 +42,6 @@ public class GalleryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.gallery_activity_layout);
-
-        activityRef = this;
 
         Intent intent = getIntent();
         final String originalImageID = intent.getStringExtra(TINDER_VIEW_ACTIVITY_GALLERY_NAME_INTENT_EXTRA_ID);
@@ -59,9 +56,9 @@ public class GalleryActivity extends AppCompatActivity {
         editButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent editIntent = new Intent(activityRef, EditActivity.class);
+                Intent editIntent = new Intent(GalleryActivity.this, EditActivity.class);
                 editIntent.putExtra(GALLERY_ACTIVITY_IMG_URL_INTENT_EXTRA_ID, originalImageID);
-                activityRef.startActivity(editIntent);
+                GalleryActivity.this.startActivity(editIntent);
             }
         });
 

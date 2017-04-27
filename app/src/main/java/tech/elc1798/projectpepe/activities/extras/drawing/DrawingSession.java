@@ -25,7 +25,6 @@ public class DrawingSession {
     }
 
     private static final String TAG = "PEPE_DRAWING_SESSION";
-    private static final Scalar COLOR = new Scalar(255, 255, 0);
     private static final int THICKNESS = 5;
     private static final int CIRCLE_RADIUS = 2;
 
@@ -34,6 +33,7 @@ public class DrawingSession {
     private LinkedList<Mat> redoStack;
     private TextBox textBox;
     private SessionState state;
+    private Scalar color;
 
     public DrawingSession(Context context, final Bitmap inputImage) {
         OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_2_0, context, new OpenCVLoaderCallback(context, TAG) {
@@ -50,8 +50,18 @@ public class DrawingSession {
 
                 textBox = new TextBox();
                 state = SessionState.FREE_DRAW;
+
+                color = new Scalar(0, 0, 0);
             }
         });
+    }
+
+    public Scalar getColor() {
+        return color;
+    }
+
+    public void setColor(int r, int g, int b) {
+        this.color = new Scalar(r, g, b);
     }
 
     public void resetCursor() {
@@ -87,9 +97,10 @@ public class DrawingSession {
                 break;
             }
             case PREVIEW_TEXT_BOX: {
+                // We want the user to appear like they're dragging the textbox from its center, so we offset the coors
                 Size textSize = Imgproc.getTextSize(textBox.text, Core.FONT_HERSHEY_DUPLEX, 1.0, THICKNESS, null);
-                textBox.x = x + (int) (textSize.width / 2);
-                textBox.y = y + (int) (textSize.height / 2);
+                textBox.x = x - (int) (textSize.width / 2);
+                textBox.y = y - (int) (textSize.height / 2);
                 break;
             }
         }
@@ -107,13 +118,13 @@ public class DrawingSession {
     public void commitTextBox() {
         startNewState();
 
-        Imgproc.putText(undoStack.getFirst(), textBox.text, new Point(textBox.x, textBox.y), Core.FONT_HERSHEY_DUPLEX, 1.0, COLOR, THICKNESS);
+        Imgproc.putText(undoStack.getFirst(), textBox.text, new Point(textBox.x, textBox.y), Core.FONT_HERSHEY_DUPLEX, 1.0, color, THICKNESS);
     }
 
     public Bitmap getBitmap() {
         Mat displayed = undoStack.getFirst().clone();
         if (textBox.visible) {
-            Imgproc.putText(displayed, textBox.text, new Point(textBox.x, textBox.y), Core.FONT_HERSHEY_DUPLEX, 1.0, COLOR, THICKNESS);
+            Imgproc.putText(displayed, textBox.text, new Point(textBox.x, textBox.y), Core.FONT_HERSHEY_DUPLEX, 1.0, color, THICKNESS);
         }
 
         Bitmap bm = Bitmap.createBitmap(displayed.cols(), displayed.rows(), Bitmap.Config.ARGB_8888);
@@ -127,9 +138,9 @@ public class DrawingSession {
 
         if ((int) previousPoint.x < 0 || (int) previousPoint.y < 0) {
             startNewState();
-            Imgproc.circle(undoStack.getFirst(), newPoint, CIRCLE_RADIUS, COLOR, THICKNESS);
+            Imgproc.circle(undoStack.getFirst(), newPoint, CIRCLE_RADIUS, color, THICKNESS);
         } else {
-            Imgproc.line(undoStack.getFirst(), previousPoint, newPoint, COLOR, THICKNESS);
+            Imgproc.line(undoStack.getFirst(), previousPoint, newPoint, color, THICKNESS);
         }
 
         previousPoint = newPoint;

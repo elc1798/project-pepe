@@ -34,6 +34,16 @@ public abstract class CameraStreamingActivity extends AppCompatActivity implemen
     private ImageView imageView;
     private int cameraID;
 
+    private OpenCVLoaderCallback openCVLoaderCallback = new OpenCVLoaderCallback(this, getTag()) {
+        @Override
+        public void onOpenCVLoadSuccess() {
+            // The camera view and classifier can only be instantiated upon the success of a BaseLoader
+            cameraView.enableView();
+
+            onOpenCVLoad();
+        }
+    };
+
     /**
      * Takes in an input matrix and performs operations on the matrix, returning the resultant output matrix. The result
      * is what is displayed on the ImageView.
@@ -181,20 +191,6 @@ public abstract class CameraStreamingActivity extends AppCompatActivity implemen
     public void stopCamera() {
         this.cameraView.disableView();
     }
-
-    /**
-     * An implementation of an OpenCV Loader Callback. This the {@code onManagerConnected} method is called upon
-     * the OpenCV libraries loading (either successfully or unsuccessfully).
-     */
-    private OpenCVLoaderCallback openCVLoaderCallback = new OpenCVLoaderCallback(this, getTag()) {
-        @Override
-        public void onOpenCVLoadSuccess() {
-            // The camera view and classifier can only be instantiated upon the success of a BaseLoader
-            cameraView.enableView();
-
-            onOpenCVLoad();
-        }
-    };
 
     /**
      * Sets the image displayed by the ImageView to the image stored in an OpenCV {@code Mat}.

@@ -56,9 +56,6 @@ public class GalleryActivity extends AppCompatActivity {
         galleryRoute = getGalleryRouteFromImageID(originalImageID);
         imageIDs = new ArrayList<>();
 
-        ImageView originalImage = (ImageView) this.findViewById(R.id.gallery_view_original_image);
-        Picasso.with(this).load(getImageURL(originalImageID)).into(originalImage);
-
         // Set up the edit button
         setUpEditButton();
 

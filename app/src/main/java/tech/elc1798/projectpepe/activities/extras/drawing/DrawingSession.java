@@ -1,6 +1,5 @@
 package tech.elc1798.projectpepe.activities.extras.drawing;
 
-
 import android.content.Context;
 import android.graphics.Bitmap;
 

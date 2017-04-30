@@ -1,6 +1,5 @@
 package tech.elc1798.projectpepe.activities.extras.drawing.special;
 
-
 import android.content.Context;
 
 import org.opencv.core.Core;

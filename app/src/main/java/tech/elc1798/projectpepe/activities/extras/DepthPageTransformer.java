@@ -1,6 +1,5 @@
 package tech.elc1798.projectpepe.activities.extras;
 
-
 import android.support.v4.view.ViewPager;
 import android.view.View;
 

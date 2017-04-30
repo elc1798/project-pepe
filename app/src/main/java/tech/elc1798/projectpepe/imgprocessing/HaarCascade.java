@@ -1,6 +1,5 @@
 package tech.elc1798.projectpepe.imgprocessing;
 
-
 import android.content.Context;
 import android.util.Log;
 

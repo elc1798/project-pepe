@@ -15,7 +15,6 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 
 import tech.elc1798.projectpepe.Constants;
-import tech.elc1798.projectpepe.EditActivity;
 import tech.elc1798.projectpepe.R;
 import tech.elc1798.projectpepe.activities.extras.DepthPageTransformer;
 import tech.elc1798.projectpepe.activities.extras.ScrollableGalleryAdapter;

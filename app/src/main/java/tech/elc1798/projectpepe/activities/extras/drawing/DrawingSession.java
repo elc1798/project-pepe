@@ -18,6 +18,7 @@ import org.opencv.imgproc.Imgproc;
 import java.util.LinkedList;
 
 import tech.elc1798.projectpepe.activities.extras.drawing.special.FaceFlipper;
+import tech.elc1798.projectpepe.activities.extras.drawing.special.Grayscalify;
 import tech.elc1798.projectpepe.activities.extras.drawing.special.Sharpen;
 import tech.elc1798.projectpepe.activities.extras.drawing.special.SpecialTool;
 import tech.elc1798.projectpepe.imgprocessing.OpenCVLoaderCallback;
@@ -61,7 +62,8 @@ public class DrawingSession {
 
                 specialTools = new SpecialTool[] {
                         new FaceFlipper(context, TAG),
-                        new Sharpen(context, TAG)
+                        new Sharpen(context, TAG),
+                        new Grayscalify(context, TAG)
                 };
             }
         });
@@ -81,7 +83,7 @@ public class DrawingSession {
 
     public void undo() {
         // Undo textbox visibility
-        textBox.visible = false;
+        cancelTextBox();
 
         // Reset state to default
         state = SessionState.FREE_DRAW;
@@ -140,6 +142,10 @@ public class DrawingSession {
         textBox.x = 0;
         textBox.y = 0;
         textBox.visible = true;
+    }
+
+    public void cancelTextBox() {
+        textBox.visible = false;
     }
 
     public void commitTextBox() {

@@ -43,7 +43,7 @@
         <activity
             android:name=".activities.GalleryActivity"
             android:screenOrientation="portrait"/>
-        <activity android:name=".EditActivity">
+        <activity android:name=".activities.EditActivity">
         </activity>
     </application>
 

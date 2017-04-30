@@ -1,4 +1,4 @@
-package tech.elc1798.projectpepe;
+package tech.elc1798.projectpepe.activities;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -27,7 +27,8 @@ import java.io.FileOutputStream;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import tech.elc1798.projectpepe.activities.GalleryActivity;
+import tech.elc1798.projectpepe.Constants;
+import tech.elc1798.projectpepe.R;
 import tech.elc1798.projectpepe.activities.extras.drawing.DrawingSession;
 import tech.elc1798.projectpepe.net.FileUploader;
 
@@ -233,6 +234,7 @@ public class EditActivity extends AppCompatActivity {
         specialButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                session.cancelTextBox();
                 new AlertDialog.Builder(EditActivity.this)
                         .setTitle(SPECIAL_TOOLS_TITLE)
                         .setItems(session.getSpecialItemNames(), new DialogInterface.OnClickListener() {
@@ -252,6 +254,7 @@ public class EditActivity extends AppCompatActivity {
         uploadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                session.cancelTextBox();
                 saveImageAndUpload();
             }
         });

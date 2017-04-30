@@ -12,6 +12,9 @@ import org.opencv.imgproc.Imgproc;
 
 import tech.elc1798.projectpepe.imgprocessing.HaarCascade;
 
+/**
+ * Special tool that flips faces upside down
+ */
 public class FaceFlipper extends SpecialTool {
 
     private static final String FACE_CLASSIFIER_XML_FILE = "frontalfacecascade.xml";
@@ -34,6 +37,13 @@ public class FaceFlipper extends SpecialTool {
         return NAME;
     }
 
+    /**
+     * This implementation will scan through the input image for matches for a "Frontal Face" classifier. The largest
+     * detected match (by size of the bounding rectangle) will be flipped over the horizontal axis, making it upside
+     * down.
+     *
+     * @param inputImage The image to perform the action on
+     */
     @Override
     public void doAction(Mat inputImage) {
         if (faceClassifier.isEmpty()) {
@@ -70,6 +80,11 @@ public class FaceFlipper extends SpecialTool {
         }
     }
 
+    /**
+     * Loads the Haar Cascade classifier when OpenCV is loaded.
+     *
+     * @param context The app context to load OpenCV for
+     */
     @Override
     public void onOpenCVLoad(Context context) {
         faceClassifier = new HaarCascade(context, FACE_CLASSIFIER_XML_FILE);

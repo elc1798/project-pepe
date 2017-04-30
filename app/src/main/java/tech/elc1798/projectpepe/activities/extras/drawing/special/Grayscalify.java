@@ -6,6 +6,9 @@ import android.content.Context;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
+/**
+ * Special tool that makes the image grayscale.
+ */
 public class Grayscalify extends SpecialTool {
 
     public Grayscalify(Context context, String tag) {
@@ -19,6 +22,11 @@ public class Grayscalify extends SpecialTool {
         return NAME;
     }
 
+    /**
+     * Makes the image grayscale using color range conversions.
+     *
+     * @param inputImage The image to perform the action on
+     */
     @Override
     public void doAction(Mat inputImage) {
         Mat grayscale = inputImage.clone();

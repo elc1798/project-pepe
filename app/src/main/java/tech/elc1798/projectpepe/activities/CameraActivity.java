@@ -13,7 +13,6 @@ import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 
 import tech.elc1798.projectpepe.R;
 import tech.elc1798.projectpepe.imgprocessing.CameraStreamingActivity;
@@ -70,10 +69,10 @@ public class CameraActivity extends CameraStreamingActivity {
     }
 
     /**
-     * Implementation: Remove the alpha channel of the image
+     * Implementation: Removes the alpha channel of the image
      *
      * @param inputMat The matrix representation of the image (frame) captured by the camera
-     * @return The input picture with the largest detected face boxed.
+     * @return The input matrix without the alpha channel
      */
     @Override
     public Mat processImage(Mat inputMat) {
@@ -84,6 +83,9 @@ public class CameraActivity extends CameraStreamingActivity {
         return rgb;
     }
 
+    /**
+     * Sets the ToggleCameraButton to call a method to flip the camera when clicked
+     */
     private void setToggleCameraButtonOnClickListener() {
         ImageButton flipCameraButton = (ImageButton) this.findViewById(R.id.camera_flip_button);
 
@@ -114,7 +116,7 @@ public class CameraActivity extends CameraStreamingActivity {
 
                 Bitmap bitmap = CameraActivity.this.getCurrentFrameBitmap();
 
-                // If getCurrentFrameBitmap returns null, do nothing
+                // If getCurrentFrameBitmap returns null, do reload the camera since we stopped it, and then return
                 if (bitmap == null) {
                     CameraActivity.this.loadOpenCVBindings();
                     return;
@@ -130,7 +132,7 @@ public class CameraActivity extends CameraStreamingActivity {
             }
         });
 
-        // Set our boolean to true so we don't keep resetting the on click listener
+        // Set our boolean to true so we don't keep resetting the on click listener when OpenCV loads
         picSnapButtonListenerSet = true;
     }
 
@@ -140,7 +142,6 @@ public class CameraActivity extends CameraStreamingActivity {
      *
      * @param bitmap The bitmap to save
      * @return The generated file name
-     * @throws IOException Upon error during file read / write
      */
     private String saveBitmapToUniqueFile(final Bitmap bitmap) {
         File imgDirectory = this.getDir(

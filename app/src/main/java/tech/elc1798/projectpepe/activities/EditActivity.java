@@ -39,6 +39,9 @@ import static tech.elc1798.projectpepe.activities.extras.PepeUtils.getGalleryIDF
 import static tech.elc1798.projectpepe.activities.extras.PepeUtils.getGalleryRouteFromImageID;
 import static tech.elc1798.projectpepe.activities.extras.PepeUtils.getImageURL;
 
+/**
+ * Activity for editing images with various tools
+ */
 public class EditActivity extends AppCompatActivity {
 
     private static final String TAG = "PEPE_EDITOR:";
@@ -63,6 +66,39 @@ public class EditActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private DrawingSession session;
 
+    private View.OnTouchListener imageViewOnTouchListener = new View.OnTouchListener() {
+        Matrix inverse = new Matrix();
+
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            int action = event.getAction();
+
+            switch (action) {
+                case MotionEvent.ACTION_UP: {
+                    session.resetCursor();
+                    break;
+                }
+
+                case MotionEvent.ACTION_MOVE: {
+                    // Calculate the actual coordinates of the bitmap:
+                    // http://stackoverflow.com/questions/33391196/how-to-take-real-coordinatesx-y-of-bitmap-from-imageview-android
+                    imageView.getImageMatrix().invert(inverse);
+                    float[] touchPoint = {event.getX(), event.getY()};
+                    inverse.mapPoints(touchPoint);
+
+                    // Draw the path
+                    session.performAction((int) touchPoint[0], (int) touchPoint[1]);
+
+                    // Update the image
+                    updateImage();
+                    break;
+                }
+            }
+
+            return true;
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,49 +119,25 @@ public class EditActivity extends AppCompatActivity {
     }
 
     /**
-     * Sets up the image view and creates a drawing sesion bound to it.
+     * Sets up the image view and creates a drawing session bound to it.
      *
      * @param originalImageID The ID of the original image so we can load it with Picasso
      */
     private void setUpImageView(String originalImageID) {
+        // Load the original image into the image view
         imageView = (ImageView) this.findViewById(R.id.edit_view_image_view);
         Picasso.with(this).load(getImageURL(originalImageID)).into(imageView);
 
+        // Create the drawing session, using the original image as the initial revision
         session = new DrawingSession(this, ((BitmapDrawable) imageView.getDrawable()).getBitmap());
-        imageView.setOnTouchListener(new View.OnTouchListener() {
-            Matrix inverse = new Matrix();
 
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                int action = event.getAction();
-
-                switch (action) {
-                    case MotionEvent.ACTION_UP: {
-                        session.resetCursor();
-                        break;
-                    }
-
-                    case MotionEvent.ACTION_MOVE: {
-                        // Calculate the actual coordinates of the bitmap:
-                        // http://stackoverflow.com/questions/33391196/how-to-take-real-coordinatesx-y-of-bitmap-from-imageview-android
-                        imageView.getImageMatrix().invert(inverse);
-                        float[] touchPoint = {event.getX(), event.getY()};
-                        inverse.mapPoints(touchPoint);
-
-                        // Draw the path
-                        session.performAction((int) touchPoint[0], (int) touchPoint[1]);
-
-                        // Update the image
-                        updateImage();
-                        break;
-                    }
-                }
-
-                return true;
-            }
-        });
+        // Set up the OnTouchListener
+        imageView.setOnTouchListener(imageViewOnTouchListener);
     }
 
+    /**
+     * Sets up the undo and redo buttons
+     */
     private void setUpControlButtons() {
         ImageButton undoButton = (ImageButton) this.findViewById(R.id.edit_view_undo_button);
         undoButton.setOnClickListener(new View.OnClickListener() {
@@ -148,6 +160,9 @@ public class EditActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Sets up the create text box button
+     */
     private void setUpTextBoxButton() {
         final ImageButton textBoxButton = (ImageButton) this.findViewById(R.id.edit_view_text_box_button);
         textBoxButton.setOnClickListener(new View.OnClickListener() {
@@ -177,6 +192,10 @@ public class EditActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Set up the "Confirm Action" button (really only used to confirm text box placement, but could be extended in the
+     * future).
+     */
     private void setUpConfirmActionButton() {
         confirmActionButton = (ImageButton) this.findViewById(R.id.edit_view_confirm_action_button);
         confirmActionButton.setOnClickListener(new View.OnClickListener() {
@@ -189,7 +208,10 @@ public class EditActivity extends AppCompatActivity {
         });
     }
 
-    public void setUpColorWheelButton() {
+    /**
+     * Sets up the "Color Wheel" button. Button will spawn a custom dialog (which I took from a library) to pick colors
+     */
+    private void setUpColorWheelButton() {
         colorWheelButton = (ImageButton) this.findViewById(R.id.edit_view_color_wheel_button);
         colorWheelButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -229,15 +251,21 @@ public class EditActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Sets up the special tools button. Button will spawn a dialog with which we can choose from a selection of tools.
+     */
     private void setUpSpecialButton() {
         ImageButton specialButton = (ImageButton) this.findViewById(R.id.edit_view_special_tools_button);
         specialButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Cancel the text box if it's not confirmed yet
                 session.cancelTextBox();
+
+                // Spawn the chooser dialog
                 new AlertDialog.Builder(EditActivity.this)
                         .setTitle(SPECIAL_TOOLS_TITLE)
-                        .setItems(session.getSpecialItemNames(), new DialogInterface.OnClickListener() {
+                        .setItems(session.getSpecialToolNames(), new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 session.performSpecialAction(which);
@@ -249,6 +277,9 @@ public class EditActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Sets up the upload button.
+     */
     private void setUpUploadButton() {
         ImageButton uploadButton = (ImageButton) this.findViewById(R.id.edit_view_upload_button);
         uploadButton.setOnClickListener(new View.OnClickListener() {
@@ -260,6 +291,9 @@ public class EditActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Updates the image view with the bitmap from the DrawingSession
+     */
     private void updateImage() {
         runOnUiThread(new Runnable() {
             @Override
@@ -269,15 +303,25 @@ public class EditActivity extends AppCompatActivity {
         });
     }
 
-    private void setConfirmActionButtonVisibility(final int visible) {
+    /**
+     * Sets the visibility of the Confirm Action Button
+     *
+     * @param visibility Visibility from org.android.View
+     */
+    private void setConfirmActionButtonVisibility(final int visibility) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                confirmActionButton.setVisibility(visible);
+                confirmActionButton.setVisibility(visibility);
             }
         });
     }
 
+    /**
+     * Sets the visibility of the progress bar
+     *
+     * @param visibility Visibility from org.android.View
+     */
     private void setProgressBarVisibility(final int visibility) {
         runOnUiThread(new Runnable() {
             @Override
@@ -287,6 +331,9 @@ public class EditActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Saves the image from the DrawingSession and uploads it to the gallery
+     */
     private void saveImageAndUpload() {
         File imgDirectory = this.getDir(
                 IMG_CACHE_STORAGE_DIRECTORY,
@@ -315,11 +362,13 @@ public class EditActivity extends AppCompatActivity {
                     return;
                 }
 
+                // Get the gallery URL
                 String galleryUploadURL = Constants.PEPE_FILE_UPLOAD_URL + String.format(
                         Constants.PEPE_GALLERY_ID_GET_PARAMETER,
                         getGalleryIDFromRoute(getGalleryRouteFromImageID(originalImageID))
                 );
 
+                // Upload the file
                 CountDownLatch latch = new CountDownLatch(1);
                 FileUploader.uploadFile(EditActivity.this, imgFile, galleryUploadURL, latch);
 
@@ -329,9 +378,11 @@ public class EditActivity extends AppCompatActivity {
                     Log.d(TAG, "CountDownLatch interrupted!");
                 }
 
+                // Stop this activity
                 EditActivity.this.finish();
             }
         });
+
         ioThread.start();
     }
 }

@@ -4,6 +4,13 @@ import android.os.AsyncTask;
 
 import java.io.File;
 
+/**
+ * An async task for making a Network request. Internally calls methods from {@code HTTPRequester}. Like
+ * {@code HTTPRequester}, this class can be used to make an arbitrary web request, not just Project PEPE specific.
+ *
+ * Constructors for this class can take in a {@code NetworkOperationCallback}, which will be executed when the network
+ * operation concludes. This argument is optional, and you should pass in {@code null} if it isn't needed.
+ */
 public class NetworkRequestAsyncTask extends AsyncTask<String, Void, String> {
 
     private enum RequestProtocols {

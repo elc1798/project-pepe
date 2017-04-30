@@ -1,6 +1,5 @@
 package tech.elc1798.projectpepe.activities.extras;
 
-
 import android.content.Context;
 import android.support.v4.view.PagerAdapter;
 import android.view.LayoutInflater;
@@ -18,6 +17,9 @@ import tech.elc1798.projectpepe.R;
 
 import static tech.elc1798.projectpepe.activities.extras.PepeUtils.getImageURL;
 
+/**
+ * Adapter for a ViewPager. The adapter dataset is an ArrayList of strings containing image IDs.
+ */
 public class ScrollableGalleryAdapter extends PagerAdapter {
 
     private Context contextRef;
@@ -32,16 +34,35 @@ public class ScrollableGalleryAdapter extends PagerAdapter {
         layoutInflater = (LayoutInflater) this.contextRef.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
+    /**
+     * Returns the size of the internal arraylist (dataset)
+     *
+     * @return a non-negative integer
+     */
     @Override
     public int getCount() {
         return imageIDs.size();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param view {@inheritDoc}
+     * @param object {@inheritDoc}
+     * @return {@inheritDoc}
+     */
     @Override
     public boolean isViewFromObject(View view, Object object) {
         return view == object;
     }
 
+    /**
+     * Will load the image given at 'position' in the dataset into an ImageView using Picasso.
+     *
+     * @param container {@inheritDoc}
+     * @param position {@inheritDoc}
+     * @return {@inheritDoc}
+     */
     @Override
     public Object instantiateItem(ViewGroup container, int position) {
         View itemView = layoutInflater.inflate(R.layout.gallery_image_item_layout, container, false);
@@ -55,6 +76,13 @@ public class ScrollableGalleryAdapter extends PagerAdapter {
         return itemView;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param container {@inheritDoc}
+     * @param position {@inheritDoc}
+     * @param object {@inheritDoc}
+     */
     @Override
     public void destroyItem(ViewGroup container, int position, Object object) {
         container.removeView((FrameLayout) object);

@@ -1,6 +1,8 @@
 package tech.elc1798.projectpepe;
 
-
+/**
+ * Class that holds constants for the project
+ */
 public class Constants {
 
     public static final String PEPE_ROOT_URL = "https://project-pepe-imgs.herokuapp.com/";

@@ -11,7 +11,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 /**
- * The {@code HTTPRequester} class abstracts and handles making GET requests to the MovieDB API.
+ * The {@code HTTPRequester} class abstracts and handles making simple GET and file POST requests (sorry, no standard
+ * POST requests).
  */
 public class HTTPRequester {
 

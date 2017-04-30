@@ -22,7 +22,9 @@ import tech.elc1798.projectpepe.R;
 /**
  * Abstracts away the overhead of streaming camera feed on Android using OpenCV
  */
-public abstract class CameraStreamingActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
+public abstract class CameraStreamingActivity
+        extends AppCompatActivity
+        implements CameraBridgeViewBase.CvCameraViewListener2 {
 
     private static final int OPENCV_FLIP_VERTICAL = 1;
 

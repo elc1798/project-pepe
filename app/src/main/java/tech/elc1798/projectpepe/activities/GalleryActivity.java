@@ -23,10 +23,13 @@ import tech.elc1798.projectpepe.net.NetworkRequestAsyncTask;
 
 import static tech.elc1798.projectpepe.activities.TinderViewActivity.TINDER_VIEW_ACTIVITY_GALLERY_NAME_INTENT_EXTRA_ID;
 import static tech.elc1798.projectpepe.activities.extras.PepeUtils.getGalleryIDFromRoute;
-import static tech.elc1798.projectpepe.activities.extras.PepeUtils.getGalleryImageURL;
+import static tech.elc1798.projectpepe.activities.extras.PepeUtils.getGalleryImageRoute;
 import static tech.elc1798.projectpepe.activities.extras.PepeUtils.getGalleryRouteFromImageID;
 import static tech.elc1798.projectpepe.activities.extras.PepeUtils.getImageURL;
 
+/**
+ * Activity for browsing Galleries
+ */
 public class GalleryActivity extends AppCompatActivity {
 
     public static final String GALLERY_ACTIVITY_IMG_URL_INTENT_EXTRA_ID = "gall_act_img_url_int_ext_id";
@@ -36,6 +39,7 @@ public class GalleryActivity extends AppCompatActivity {
 
     private ViewPager viewPager;
     private ScrollableGalleryAdapter adapter;
+    private String originalImageID;
     private String galleryRoute;
     private String gallerySizeURL;
     private ArrayList<String> imageIDs;
@@ -45,8 +49,9 @@ public class GalleryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.gallery_activity_layout);
 
+        // Display the original image at the top
         Intent intent = getIntent();
-        final String originalImageID = intent.getStringExtra(TINDER_VIEW_ACTIVITY_GALLERY_NAME_INTENT_EXTRA_ID);
+        originalImageID = intent.getStringExtra(TINDER_VIEW_ACTIVITY_GALLERY_NAME_INTENT_EXTRA_ID);
 
         galleryRoute = getGalleryRouteFromImageID(originalImageID);
         imageIDs = new ArrayList<>();
@@ -54,20 +59,15 @@ public class GalleryActivity extends AppCompatActivity {
         ImageView originalImage = (ImageView) this.findViewById(R.id.gallery_view_original_image);
         Picasso.with(this).load(getImageURL(originalImageID)).into(originalImage);
 
-        ImageButton editButton = (ImageButton) this.findViewById(R.id.gallery_view_edit_image_button);
-        editButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent editIntent = new Intent(GalleryActivity.this, EditActivity.class);
-                editIntent.putExtra(GALLERY_ACTIVITY_IMG_URL_INTENT_EXTRA_ID, originalImageID);
-                GalleryActivity.this.startActivityForResult(editIntent, EDIT_ACTIVITY_FINISH_REQUEST_CODE);
-            }
-        });
+        // Set up the edit button
+        setUpEditButton();
 
+        // Set up the ViewPager
         viewPager = (ViewPager) this.findViewById(R.id.gallery_view_view_pager);
         adapter = new ScrollableGalleryAdapter(this, imageIDs, null);
         viewPager.setPageTransformer(true, new DepthPageTransformer());
 
+        // Pull the images after getting the number of available images in the gallery
         String galleryID = getGalleryIDFromRoute(galleryRoute);
 
         gallerySizeURL = Constants.PEPE_GALLERY_SIZE_URL + String.format(
@@ -80,13 +80,32 @@ public class GalleryActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == EDIT_ACTIVITY_FINISH_REQUEST_CODE) {
+        if (requestCode == EDIT_ACTIVITY_FINISH_REQUEST_CODE) { // Refresh the gallery if we just returned from editor
             if (resultCode == Activity.RESULT_OK || resultCode == Activity.RESULT_CANCELED) {
                 new NetworkRequestAsyncTask(new GetNumGalleryImagesCallback()).execute(gallerySizeURL);
             }
         }
     }
 
+    /**
+     * Sets up the edit button
+     */
+    private void setUpEditButton() {
+        ImageButton editButton = (ImageButton) this.findViewById(R.id.gallery_view_edit_image_button);
+        editButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent editIntent = new Intent(GalleryActivity.this, EditActivity.class);
+                editIntent.putExtra(GALLERY_ACTIVITY_IMG_URL_INTENT_EXTRA_ID, originalImageID);
+                GalleryActivity.this.startActivityForResult(editIntent, EDIT_ACTIVITY_FINISH_REQUEST_CODE);
+            }
+        });
+    }
+
+    /**
+     * NetworkOperationCallback implementation that gets the gallery images uses them as a dataset for the ViewPager
+     * adapter. Will then bind the adapter to the ViewPager explicitly to force refreshing.
+     */
     private class GetNumGalleryImagesCallback extends NetworkOperationCallback {
         @Override
         public void parseNetworkOperationContents(String contents) {
@@ -100,7 +119,7 @@ public class GalleryActivity extends AppCompatActivity {
             }
 
             for (int i = imageIDs.size(); i < numImages; i++) {
-                imageIDs.add(getGalleryImageURL(galleryRoute, i));
+                imageIDs.add(getGalleryImageRoute(galleryRoute, i));
             }
 
             Log.d(TAG, imageIDs.toString());

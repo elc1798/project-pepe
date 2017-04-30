@@ -19,6 +19,9 @@ import tech.elc1798.projectpepe.activities.extras.ScrollableGalleryAdapter;
 import tech.elc1798.projectpepe.net.NetworkOperationCallback;
 import tech.elc1798.projectpepe.net.NetworkRequestAsyncTask;
 
+/**
+ * A Tinder-Like Activity where users swipe through images, and click them for a "Detail" view
+ */
 public class TinderViewActivity extends AppCompatActivity {
 
     public static final String TINDER_VIEW_ACTIVITY_GALLERY_NAME_INTENT_EXTRA_ID = "tind_act_gallery_name_intent_id";
@@ -41,8 +44,41 @@ public class TinderViewActivity extends AppCompatActivity {
         imageIDs = new ArrayList<>();
         callback = new GetImageURLCallback();
         currentPage = 0;
-
         progressBar = (ProgressBar) this.findViewById(R.id.tinder_view_meme_load_progress_bar);
+
+        setUpViewPagerAndAdapter();
+        getNextBatchOfImages();
+        setUpCameraButton();
+        setUpSyncButton();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == CAMERA_ACTIVITY_FINISH_REQUEST_CODE) { // If we returned from the camera, refresh
+            if (resultCode == Activity.RESULT_OK || resultCode == Activity.RESULT_CANCELED) {
+                getNextBatchOfImages();
+            }
+        }
+    }
+
+    /**
+     * Pulls another batch of 10 images starting from the end of the list of images we've already loaded
+     */
+    private void getNextBatchOfImages() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                progressBar.setVisibility(View.VISIBLE);
+            }
+        });
+
+        new NetworkRequestAsyncTask(callback).execute(callback.getCurrentPageURL());
+    }
+
+    /**
+     * Sets up the ViewPager and Adapter
+     */
+    private void setUpViewPagerAndAdapter() {
         viewPager = (ViewPager) this.findViewById(R.id.tinder_view_view_pager);
         adapter = new ScrollableGalleryAdapter(this, imageIDs, new View.OnClickListener() {
             @Override
@@ -74,33 +110,11 @@ public class TinderViewActivity extends AppCompatActivity {
             }
         });
         viewPager.setPageTransformer(true, new DepthPageTransformer());
-
-        getNextBatchOfImages();
-        setUpCameraButton();
-        setUpSyncButton();
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == CAMERA_ACTIVITY_FINISH_REQUEST_CODE) {
-            if (resultCode == Activity.RESULT_OK || resultCode == Activity.RESULT_CANCELED) {
-                getNextBatchOfImages();
-            }
-        }
-    }
-
-    private void getNextBatchOfImages() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                progressBar.setVisibility(View.VISIBLE);
-            }
-        });
-
-        new NetworkRequestAsyncTask(callback).execute(callback.getCurrentPageURL());
-    }
-
-
+    /**
+     * Sets up the camera button to start an intent for the CameraView
+     */
     private void setUpCameraButton() {
         ImageButton cameraButton = (ImageButton) this.findViewById(R.id.tinder_view_go_to_camera_button);
 
@@ -113,6 +127,9 @@ public class TinderViewActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Sets up the sync button. The sync button will force a hard refresh of images
+     */
     private void setUpSyncButton() {
         ImageButton syncButton = (ImageButton) this.findViewById(R.id.tinder_view_sync_button);
         syncButton.setOnClickListener(new View.OnClickListener() {
@@ -123,6 +140,10 @@ public class TinderViewActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Callback for getting a batch of images. Will update the dataset with all the image routes we received from the
+     * server. If we did receive at least 1 image, updates the dataset and force refreshes the ViewPager
+     */
     private class GetImageURLCallback extends NetworkOperationCallback {
 
         private int currentOffset;
@@ -131,6 +152,11 @@ public class TinderViewActivity extends AppCompatActivity {
             currentOffset = 0;
         }
 
+        /**
+         * Gets the current URL for the 'Page' we are on (Each page of the ViewPager is a single image)
+         *
+         * @return A String containing the URL
+         */
         String getCurrentPageURL() {
             String params = String.format(Constants.PEPE_ROOT_GET_PARAMETERS, currentOffset);
             return Constants.PEPE_ROOT_URL + params;
@@ -142,6 +168,7 @@ public class TinderViewActivity extends AppCompatActivity {
                 return;
             }
 
+            // Get the new image routes the server gave us
             int originalCount = adapter.getCount();
             String[] imagePaths = contents.trim().split(Constants.PEPE_IMAGELIST_SEPARATOR);
 
@@ -167,7 +194,7 @@ public class TinderViewActivity extends AppCompatActivity {
                 viewPager.setAdapter(adapter);
             }
 
-            // Scroll to the page we were just on
+            // Scroll to the page we were just on, since we had to hard refresh the ViewPager
             viewPager.setCurrentItem(currentPage);
         }
     }

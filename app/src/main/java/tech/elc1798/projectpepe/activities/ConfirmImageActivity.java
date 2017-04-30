@@ -21,13 +21,11 @@ import java.util.concurrent.TimeUnit;
 import tech.elc1798.projectpepe.Constants;
 import tech.elc1798.projectpepe.R;
 import tech.elc1798.projectpepe.net.FileUploader;
-import tech.elc1798.projectpepe.net.NetworkOperationCallback;
-import tech.elc1798.projectpepe.net.NetworkRequestAsyncTask;
-
-import static tech.elc1798.projectpepe.Constants.FILE_UPLOAD_FAIL_MESSAGE;
-import static tech.elc1798.projectpepe.Constants.FILE_UPLOAD_SUCCESS_MESSAGE;
 import static tech.elc1798.projectpepe.Constants.IMG_CACHE_STORAGE_DIRECTORY;
 
+/**
+ * Activity to confirm uploading the image taken by the camera
+ */
 public class ConfirmImageActivity extends AppCompatActivity {
 
     private static final String TAG = "PEPE_CONFIRM_IMG:";
@@ -38,6 +36,12 @@ public class ConfirmImageActivity extends AppCompatActivity {
 
     private File imageFile;
 
+    /**
+     * Spawns a thread that waits until the CameraActivity (parent activity) finishes writing. After writing is done,
+     * will load the picture file into the ImageView and set up the rest of the views in the activity.
+     *
+     * @param savedInstanceState {@inheritDoc}
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -127,6 +131,9 @@ public class ConfirmImageActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Makes the progress bar invisible
+     */
     private void stopProgressBar() {
         final ProgressBar progressBar = (ProgressBar) this.findViewById(R.id.confirm_image_progress_bar);
 

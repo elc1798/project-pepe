@@ -1,8 +1,14 @@
 package tech.elc1798.projectpepe.activities.extras;
 
-
 import tech.elc1798.projectpepe.Constants;
 
+/**
+ * Utility class containing methods used to get important values required to interface with the Project PEPE server.
+ *
+ * Note that a URL is a full link (https://google.com/blah1/blah2/blah3), whereas the route is the path extending from
+ * the root of the URL (/blah1/blah2/blah3 from the example above). The gallery ID is the identifier for the gallery
+ * used by the image.
+ */
 public class PepeUtils {
 
     /**
@@ -27,13 +33,13 @@ public class PepeUtils {
     }
 
     /**
-     * Gets the URL for a gallery image
+     * Gets the route for a gallery image
      *
      * @param galleryRoute The gallery's ID
      * @param imageID      The image ID to retrieve
-     * @return a String representing a URL
+     * @return a String representing a route
      */
-    public static String getGalleryImageURL(String galleryRoute, int imageID) {
+    public static String getGalleryImageRoute(String galleryRoute, int imageID) {
         return galleryRoute + Constants.URL_PATH_SEPARATOR + imageID +
                 Constants.PEPE_IMAGE_EXTENSION;
     }

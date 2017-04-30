@@ -7,6 +7,9 @@ import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
+/**
+ * Special tool for over-sharpening the image to obtain that classic "distortion" effect seen in many memes
+ */
 public class Sharpen extends SpecialTool {
 
     private static final String NAME = "Sharpen Image";
@@ -25,6 +28,12 @@ public class Sharpen extends SpecialTool {
         return NAME;
     }
 
+    /**
+     * Uses the Gaussian Blur algorithm with an "excessive" kernel to oversharpen the image. This will cause the image
+     * to become distorted, the colors to appear more concentrated and brighter, and edges to be much much more defined.
+     *
+     * @param inputImage The image to perform the action on
+     */
     @Override
     public void doAction(Mat inputImage) {
         for (int i = 0; i < NUM_ITERATIONS; i++) {

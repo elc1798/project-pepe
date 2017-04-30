@@ -3,7 +3,6 @@ package tech.elc1798.projectpepe.activities.extras.drawing;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.util.Log;
 
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
@@ -21,7 +20,7 @@ import tech.elc1798.projectpepe.activities.extras.drawing.special.FaceFlipper;
 import tech.elc1798.projectpepe.activities.extras.drawing.special.Grayscalify;
 import tech.elc1798.projectpepe.activities.extras.drawing.special.Sharpen;
 import tech.elc1798.projectpepe.activities.extras.drawing.special.SpecialTool;
-import tech.elc1798.projectpepe.imgprocessing.OpenCVLoaderCallback;
+import tech.elc1798.projectpepe.imgprocessing.OpenCVLibLoader;
 
 public class DrawingSession {
 
@@ -44,7 +43,7 @@ public class DrawingSession {
         FREE_DRAW, PREVIEW_TEXT_BOX
     }
     public DrawingSession(final Context context, final Bitmap inputImage) {
-        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_2_0, context, new OpenCVLoaderCallback(context, TAG) {
+        OpenCVLibLoader.loadOpenCV(context, new OpenCVLibLoader.Callback(context, TAG) {
             @Override
             public void onOpenCVLoadSuccess() {
                 Mat image = new Mat(inputImage.getHeight(), inputImage.getWidth(), CvType.CV_8UC1);

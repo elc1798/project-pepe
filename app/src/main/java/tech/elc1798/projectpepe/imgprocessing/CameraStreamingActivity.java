@@ -10,17 +10,14 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
-import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.JavaCameraView;
-import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 
 import tech.elc1798.projectpepe.R;
-import tech.elc1798.projectpepe.activities.CameraActivity;
 
 /**
  * Abstracts away the overhead of streaming camera feed on Android using OpenCV
@@ -34,7 +31,7 @@ public abstract class CameraStreamingActivity extends AppCompatActivity implemen
     private ImageView imageView;
     private int cameraID;
 
-    private OpenCVLoaderCallback openCVLoaderCallback = new OpenCVLoaderCallback(this, getTag()) {
+    private OpenCVLibLoader.Callback openCVLoaderCallback = new OpenCVLibLoader.Callback(this, getTag()) {
         @Override
         public void onOpenCVLoadSuccess() {
             // The camera view and classifier can only be instantiated upon the success of a BaseLoader
@@ -127,6 +124,9 @@ public abstract class CameraStreamingActivity extends AppCompatActivity implemen
         Core.flip(inverted, inverted, OPENCV_FLIP_VERTICAL);
         setImage(processImage(inverted));
 
+        // Clean up unnecessary matrices
+        inverted.release();
+
         return tmp;
     }
 
@@ -134,7 +134,7 @@ public abstract class CameraStreamingActivity extends AppCompatActivity implemen
      * Loads an async task to load the OpenCV bindings
      */
     protected void loadOpenCVBindings() {
-        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_2_0, this, openCVLoaderCallback);
+        OpenCVLibLoader.loadOpenCV(this, openCVLoaderCallback);
     }
 
     /**

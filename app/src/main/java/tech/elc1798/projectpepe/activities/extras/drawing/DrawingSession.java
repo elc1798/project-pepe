@@ -12,12 +12,12 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
-import java.util.LinkedList;
-
 import tech.elc1798.projectpepe.activities.extras.drawing.special.FaceFlipper;
 import tech.elc1798.projectpepe.activities.extras.drawing.special.Grayscalify;
 import tech.elc1798.projectpepe.activities.extras.drawing.special.Sharpen;
 import tech.elc1798.projectpepe.activities.extras.drawing.special.SpecialTool;
+import tech.elc1798.projectpepe.activities.extras.vcs.RevisionDuplicator;
+import tech.elc1798.projectpepe.activities.extras.vcs.RevisionTrunk;
 import tech.elc1798.projectpepe.imgprocessing.OpenCVLibLoader;
 
 /**
@@ -32,8 +32,8 @@ public class DrawingSession {
     private static final double FONT_SCALE = 2.2;
 
     private Point previousPoint;
-    private LinkedList<Mat> undoStack;
-    private LinkedList<Mat> redoStack;
+    private RevisionTrunk<Mat> versionController;
+
     private TextBox textBox;
     private SessionState state;
     private Scalar color;
@@ -61,9 +61,12 @@ public class DrawingSession {
                 Utils.bitmapToMat(inputImage, image);
                 Imgproc.cvtColor(image, image, Imgproc.COLOR_RGBA2RGB);
 
-                undoStack = new LinkedList<>();
-                undoStack.addFirst(image);
-                redoStack = new LinkedList<>();
+                versionController = new RevisionTrunk<>(image, new RevisionDuplicator<Mat>() {
+                    @Override
+                    public Mat duplicate(Mat revision) {
+                        return revision.clone();
+                    }
+                });
 
                 previousPoint = new Point(-1, -1);
                 textBox = new TextBox();
@@ -120,22 +123,14 @@ public class DrawingSession {
         // Reset state to default
         state = SessionState.FREE_DRAW;
 
-        Mat undone = undoStack.pop();
-
-        if (undoStack.isEmpty()) {
-            undoStack.addFirst(undone);
-        } else {
-            redoStack.addFirst(undone);
-        }
+        versionController.rollBackRevision();
     }
 
     /**
      * Re-applies an undone operation if available
      */
     public void redo() {
-        if (!redoStack.isEmpty()) {
-            undoStack.addFirst(redoStack.pop());
-        }
+        versionController.forwardRevision();
     }
 
     /**
@@ -266,7 +261,7 @@ public class DrawingSession {
      * @return An OpenCV Mat
      */
     private Mat getCurrentImage() {
-        return undoStack.getFirst();
+        return versionController.getCurrentRevision();
     }
 
     /**
@@ -293,10 +288,7 @@ public class DrawingSession {
      * Starts a new revision on the undo stack.
      */
     private void startNewRevision() {
-        undoStack.addFirst(getCurrentImage().clone());
-
-        // Clear the redo stack, as we have branched away from the previous diff path
-        redoStack.clear();
+        versionController.startNewRevisionWithCopy();
 
         // Update the state type
         state = SessionState.FREE_DRAW;
